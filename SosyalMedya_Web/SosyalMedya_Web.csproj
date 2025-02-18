@@ -7,8 +7,119 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Include="wwwroot\frontend\.vscode\launch.json" />
+    <Content Include="wwwroot\frontend\.vs\ProjectSettings.json" />
+    <Content Include="wwwroot\frontend\.vs\SocialMedia_Frontend\v17\DocumentLayout.backup.json" />
+    <Content Include="wwwroot\frontend\.vs\SocialMedia_Frontend\v17\DocumentLayout.json" />
+    <Content Include="wwwroot\frontend\.vs\VSWorkspaceState.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="wwwroot\frontend\.git\COMMIT_EDITMSG" />
+    <None Include="wwwroot\frontend\.git\config" />
+    <None Include="wwwroot\frontend\.git\description" />
+    <None Include="wwwroot\frontend\.git\FETCH_HEAD" />
+    <None Include="wwwroot\frontend\.git\HEAD" />
+    <None Include="wwwroot\frontend\.git\hooks\applypatch-msg.sample" />
+    <None Include="wwwroot\frontend\.git\hooks\commit-msg.sample" />
+    <None Include="wwwroot\frontend\.git\hooks\fsmonitor-watchman.sample" />
+    <None Include="wwwroot\frontend\.git\hooks\post-update.sample" />
+    <None Include="wwwroot\frontend\.git\hooks\pre-applypatch.sample" />
+    <None Include="wwwroot\frontend\.git\hooks\pre-commit.sample" />
+    <None Include="wwwroot\frontend\.git\hooks\pre-merge-commit.sample" />
+    <None Include="wwwroot\frontend\.git\hooks\pre-push.sample" />
+    <None Include="wwwroot\frontend\.git\hooks\pre-rebase.sample" />
+    <None Include="wwwroot\frontend\.git\hooks\pre-receive.sample" />
+    <None Include="wwwroot\frontend\.git\hooks\prepare-commit-msg.sample" />
+    <None Include="wwwroot\frontend\.git\hooks\push-to-checkout.sample" />
+    <None Include="wwwroot\frontend\.git\hooks\update.sample" />
+    <None Include="wwwroot\frontend\.git\index" />
+    <None Include="wwwroot\frontend\.git\info\exclude" />
+    <None Include="wwwroot\frontend\.git\logs\HEAD" />
+    <None Include="wwwroot\frontend\.git\logs\refs\heads\master" />
+    <None Include="wwwroot\frontend\.git\logs\refs\remotes\origin\main" />
+    <None Include="wwwroot\frontend\.git\logs\refs\remotes\origin\master" />
+    <None Include="wwwroot\frontend\.git\objects\0a\92e81124759fecb3597976ddde55a086d2b26f" />
+    <None Include="wwwroot\frontend\.git\objects\0b\158b67ee4e1e32f5367caa84819fe6c60bc570" />
+    <None Include="wwwroot\frontend\.git\objects\0c\560f84ba350b645c58b5c41d6d943bfa8b5e2c" />
+    <None Include="wwwroot\frontend\.git\objects\11\000c668b8799dcdfd1c1387c5fe4b3afe646c7" />
+    <None Include="wwwroot\frontend\.git\objects\11\74d0f3aeb4cbe3de46f1481bf19c9d53929a64" />
+    <None Include="wwwroot\frontend\.git\objects\1c\5f3662e78d56983cef3faa72fc8dfe0e79d393" />
+    <None Include="wwwroot\frontend\.git\objects\1d\a585a0e5d482cff2d9799cd8b5e6a17ea21e8a" />
+    <None Include="wwwroot\frontend\.git\objects\1e\9d99d6ea8330040bf7e1e437c2a2b908012588" />
+    <None Include="wwwroot\frontend\.git\objects\28\b8c8fa8a0eae1bb085281c9a64da5f81b9e90e" />
+    <None Include="wwwroot\frontend\.git\objects\36\8e7048f6c6171e2938e50c45dda31e5fae77f0" />
+    <None Include="wwwroot\frontend\.git\objects\39\d0fdda137e8c3009287ccaafbd8d6d83d5597a" />
+    <None Include="wwwroot\frontend\.git\objects\40\87929c55817cd82c9fd6b40b07f36c946d3840" />
+    <None Include="wwwroot\frontend\.git\objects\40\b597610b8f7928df8ba6f5345c7de3940052ac" />
+    <None Include="wwwroot\frontend\.git\objects\45\7302faa2214c164f7ef345c9f5045387fbe8ea" />
+    <None Include="wwwroot\frontend\.git\objects\47\cd54af1bd795dc7d8440b60023ca622c69da63" />
+    <None Include="wwwroot\frontend\.git\objects\48\14159bf577d33429e443c8b5a48afea11b5be8" />
+    <None Include="wwwroot\frontend\.git\objects\49\96ec0de5f370b4be0a7caf728afad134be679e" />
+    <None Include="wwwroot\frontend\.git\objects\4e\18f62f19e140f71d200f8a5ef9e66ab66092b0" />
+    <None Include="wwwroot\frontend\.git\objects\51\389a82f86c4678ec31b22f0ec03ebfc10122cd" />
+    <None Include="wwwroot\frontend\.git\objects\59\b5d011c965004bfacef7343df8f8d6eb4db171" />
+    <None Include="wwwroot\frontend\.git\objects\5d\f281c75586869df962b36554d7c9bc570021d5" />
+    <None Include="wwwroot\frontend\.git\objects\5e\7bac84191fbcefb53a6b03a77e145dc8213548" />
+    <None Include="wwwroot\frontend\.git\objects\5f\85fda020b3f9d248df93050d4a075f9081b633" />
+    <None Include="wwwroot\frontend\.git\objects\63\c9638a3c85e92ce264f06cc19c0cec197bde4b" />
+    <None Include="wwwroot\frontend\.git\objects\64\a94ef15599e2059d14dcd2deeee605451dc6fa" />
+    <None Include="wwwroot\frontend\.git\objects\65\297f0daaab09eaae053b94c0bbf642407aae7e" />
+    <None Include="wwwroot\frontend\.git\objects\70\2e7028514355f6d83f4e3f0122eabc3585b91d" />
+    <None Include="wwwroot\frontend\.git\objects\71\8753da74ca7e002db9b5a02e9ae06141eeb82b" />
+    <None Include="wwwroot\frontend\.git\objects\73\6428a2ff8fc36ab61f5f19d58ce565cb7769c8" />
+    <None Include="wwwroot\frontend\.git\objects\74\df40bc277c814230b9ad9c60c1257e0f929cb2" />
+    <None Include="wwwroot\frontend\.git\objects\76\dc7a4da0bcdfe109a7b88e027da5cb765509e5" />
+    <None Include="wwwroot\frontend\.git\objects\78\318dc17b1ea5eb3865edb1966af1cd88acf815" />
+    <None Include="wwwroot\frontend\.git\objects\7b\810ea09a1caff37d4eb54f0cd9f92ecd8ab28f" />
+    <None Include="wwwroot\frontend\.git\objects\81\aa76636a5109f794b69b16199324027db1a507" />
+    <None Include="wwwroot\frontend\.git\objects\90\f6488f6e3759241606476087aee3e05644cbce" />
+    <None Include="wwwroot\frontend\.git\objects\93\ae39d34636502398d1a27defa42c0c5c996d69" />
+    <None Include="wwwroot\frontend\.git\objects\95\764c202236a71d937cef7e9c62052d157d79df" />
+    <None Include="wwwroot\frontend\.git\objects\98\989e0c0d402892c43d582d5229fa73931adcdf" />
+    <None Include="wwwroot\frontend\.git\objects\9c\fdc74bd00b1c17651740b53e20ca52d6820821" />
+    <None Include="wwwroot\frontend\.git\objects\9d\316835708b3300d6f2c3d2f6d831872e2a3f73" />
+    <None Include="wwwroot\frontend\.git\objects\a6\495571467ca366a64d7e8b34defd1acf5e15cb" />
+    <None Include="wwwroot\frontend\.git\objects\a9\5f7d24ada6cdb897c99fdb1183bc1c1097cef9" />
+    <None Include="wwwroot\frontend\.git\objects\af\4545eb73d777ce17490ad6b4b953e0e0678da8" />
+    <None Include="wwwroot\frontend\.git\objects\b6\663acb3affbe4accb66d149db24382823c44ba" />
+    <None Include="wwwroot\frontend\.git\objects\c1\3dfcc1f0d658ddc6e6027f7940c9aa9ff6dc02" />
+    <None Include="wwwroot\frontend\.git\objects\c2\4df389ebb3bdcf991e94f7e6ed219f2a6b0c5a" />
+    <None Include="wwwroot\frontend\.git\objects\c2\c8729931cbf805b8f8494e17e1d524ee381d5a" />
+    <None Include="wwwroot\frontend\.git\objects\c5\81ad0c7b5f85bc2c49ce543724e6e0b475dba7" />
+    <None Include="wwwroot\frontend\.git\objects\cf\7bc3f54f28822b90615b02100f46c7de0bddaa" />
+    <None Include="wwwroot\frontend\.git\objects\d1\5d976691e7233968ffa0971343fbb56ce1e0fc" />
+    <None Include="wwwroot\frontend\.git\objects\d2\2256bf4a731a22d86eeb98c66a2dd56c1aca5a" />
+    <None Include="wwwroot\frontend\.git\objects\d7\eb38206c5b05db348f75cd9d06692a40047d65" />
+    <None Include="wwwroot\frontend\.git\objects\dc\be2912c2e81fd640ec6d84abd5f24f97d68325" />
+    <None Include="wwwroot\frontend\.git\objects\de\49b7c06b618ee57ba657b122d79bc09a76044a" />
+    <None Include="wwwroot\frontend\.git\objects\e6\9de29bb2d1d6434b8b29ae775ad8c2e48c5391" />
+    <None Include="wwwroot\frontend\.git\objects\ec\cc932d36ce966c98a090d4320a8c6eae435d89" />
+    <None Include="wwwroot\frontend\.git\objects\f7\bf3c6ab9f8bcd2e35d17c000645f1c5f42aeb1" />
+    <None Include="wwwroot\frontend\.git\objects\f8\b4888565caadc7510be75682268d6c18edd6de" />
+    <None Include="wwwroot\frontend\.git\objects\fa\14a701d0663add7048807f0bc5633a83422dfe" />
+    <None Include="wwwroot\frontend\.git\objects\fb\0124ddbc31eff41e8d2466c0b188243ea2fffc" />
+    <None Include="wwwroot\frontend\.git\refs\heads\master" />
+    <None Include="wwwroot\frontend\.git\refs\remotes\origin\main" />
+    <None Include="wwwroot\frontend\.git\refs\remotes\origin\master" />
+    <None Include="wwwroot\frontend\.vs\slnx.sqlite" />
+    <None Include="wwwroot\frontend\.vs\SocialMedia_Frontend\config\applicationhost.config" />
+    <None Include="wwwroot\frontend\.vs\SocialMedia_Frontend\FileContentIndex\21870b85-01f6-4f97-b574-8a3128fe5f0c.vsidx" />
+    <None Include="wwwroot\frontend\.vs\SocialMedia_Frontend\FileContentIndex\266b1d37-3c8f-4671-a680-00e3b5fe4b38.vsidx" />
+    <None Include="wwwroot\frontend\.vs\SocialMedia_Frontend\FileContentIndex\443f6246-a6ef-4eda-a85e-b3152a4ac185.vsidx" />
+    <None Include="wwwroot\frontend\.vs\SocialMedia_Frontend\FileContentIndex\a90ecc1d-3b1f-4aab-afea-bcb36f71dcac.vsidx" />
+    <None Include="wwwroot\frontend\.vs\SocialMedia_Frontend\FileContentIndex\c6c4f41a-f3ff-4732-83b1-f0bba60262e7.vsidx" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="8.0.0" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.7" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\frontend\.git\objects\info\" />
+    <Folder Include="wwwroot\frontend\.git\objects\pack\" />
+    <Folder Include="wwwroot\frontend\.git\refs\tags\" />
   </ItemGroup>
 
 </Project>
