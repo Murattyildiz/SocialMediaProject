@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Newtonsoft.Json;
 using SosyalMedya_Web.Models;
 using SosyalMedya_Web.Utilities.Helpers;
@@ -22,8 +23,9 @@ namespace SosyalMedya_Web.Controllers
         {
             return View();
         }
+
         [HttpPost("LoginPost")]
-        public async Task<IActionResult> Login(UserForLogin userForLogin)
+        public async Task<IActionResult> LoginPost(UserForLogin userForLogin)
         {
             var httpClient =_httpClientFactory.CreateClient();
             var jsonLogin = JsonConvert.SerializeObject(userForLogin);
@@ -72,12 +74,13 @@ namespace SosyalMedya_Web.Controllers
 
         private async Task<IActionResult> SignInUserByRoleClaim(string role)
         {
-            var claims=new List<Claim> { new Claim(ClaimTypes.Role, role) };
-            var userIdentity=new ClaimsIdentity(claims,role);
+            var claims = new List<Claim> { new Claim(ClaimTypes.Role, role) };
+            var userIdentity = new ClaimsIdentity(claims, role);
             var userPrincipal = new ClaimsPrincipal(userIdentity);
             await HttpContext.SignInAsync(userPrincipal);
             return RedirectToAction("Index", "Home");
         }
+
 
         private async Task<ApiAuthDataResponse<UserForLogin>> GetUserForLogin(HttpResponseMessage responseMessage)
         {

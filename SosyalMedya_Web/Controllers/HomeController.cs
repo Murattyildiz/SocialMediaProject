@@ -8,7 +8,8 @@ namespace SosyalMedya_Web.Controllers
 {
     public class HomeController : Controller
     {
-        [Authorize]
+        [Authorize(Roles ="admin")]
+        [HttpGet]
        public async Task<IActionResult> Index()
         {
             var httpClient= new HttpClient();

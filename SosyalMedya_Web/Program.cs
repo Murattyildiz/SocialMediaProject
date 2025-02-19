@@ -11,7 +11,6 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     options.AccessDeniedPath = "/giris-yap";
 });
 builder.Services.AddSession();
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

@@ -33,7 +33,7 @@ namespace Business.Concrete
 
         [LogAspect(typeof(FileLogger))]
         [ValidationAspect(typeof(ArticleValidator))]
-        //[SecuredOperation("admin,user")]
+        [SecuredOperation("admin,user")]
         [CacheRemoveAspect("IArticleService.Get")]
         public IResult Add(Article entity)
         {

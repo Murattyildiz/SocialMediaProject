@@ -26,7 +26,7 @@ namespace Business.Concrete
         public CommentManager(ICommentDal commentDal) => _commentDal = commentDal;
 
         [LogAspect(typeof(FileLogger))]
-        //[SecuredOperation("admin,user")]
+        [SecuredOperation("admin,user")]
         [ValidationAspect(typeof(CommentValidator))]
         [CacheRemoveAspect("IComemntService.Get")]
         public IResult Add(Comment entity)
@@ -36,7 +36,7 @@ namespace Business.Concrete
         }
 
         [LogAspect(typeof(FileLogger))]
-        //[SecuredOperation("admin,user")]
+        [SecuredOperation("admin,user")]
         [CacheRemoveAspect("IComemntService.Get")]
         public IResult AllCommentDeleteByUserId(int id)
         {
@@ -63,7 +63,7 @@ namespace Business.Concrete
         }
 
         [LogAspect(typeof(FileLogger))]
-        //[SecuredOperation("admin,user")]
+        [SecuredOperation("admin,user")]
         [CacheRemoveAspect("ICommentService.Get")]
         public IResult Delete(int id)
         {
@@ -109,7 +109,7 @@ namespace Business.Concrete
         }
 
         [LogAspect(typeof(FileLogger))]
-        //[SecuredOperation("admin,user")]
+        [SecuredOperation("admin,user")]
         [ValidationAspect(typeof(CommentValidator))]
         [CacheRemoveAspect("IComemntService.Get")]
         public IResult Update(Comment entity)
