@@ -8,8 +8,7 @@ namespace SosyalMedya_Web.Controllers
 {
     public class HomeController : Controller
     {
-        //[Authorize(Roles ="admin")]
-
+        [Authorize(Roles ="admin")]
         [HttpGet]
        public async Task<IActionResult> Index()
         {

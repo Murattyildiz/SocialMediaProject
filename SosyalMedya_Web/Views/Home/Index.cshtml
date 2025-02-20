@@ -8,6 +8,14 @@
 
     <div class="row py-3 border rounded-3 shadow ">
         <form action="deneme.php" method="get">
+            <div class="form-group w-100 mb-3">
+                <label for="topic" class="d-block fw-bold">Konu Seçiniz:</label>
+                <select class="js-example-basic-single form-control" name="state" id="topic">
+                    <option value="AL">Alabama</option>
+                    ...
+                    <option value="WY">Wyoming</option>
+                </select>
+            </div>
             <input id="summernote" type="text" class=" w-100" placeholder="Yorumunuz">
             <button class="btn btn-outline-success float-end mt-2" type="submit">Paylaş</button>
         </form>
