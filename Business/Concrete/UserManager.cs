@@ -41,7 +41,7 @@ namespace Business.Concrete
         }
 
         [LogAspect(typeof(FileLogger))]
-        //[SecuredOperation("admin,user")]
+        [SecuredOperation("admin,user")]
         [CacheRemoveAspect("IUserService.Get")]
         public IResult Add(User entity)
         {
@@ -145,7 +145,7 @@ namespace Business.Concrete
         }
 
         [LogAspect(typeof(FileLogger))]
-        // [SecuredOperation("admin,user")]
+         [SecuredOperation("admin,user")]
         [CacheRemoveAspect("IUserService.Get")]
         public IResult Update(User entity)
         {
