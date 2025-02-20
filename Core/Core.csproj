@@ -18,6 +18,7 @@
     </PackageReference>
     <PackageReference Include="Mime-Detective" Version="22.12.14" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  
   </ItemGroup>
 
 </Project>
