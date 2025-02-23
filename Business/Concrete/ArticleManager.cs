@@ -32,8 +32,8 @@ namespace Business.Concrete
         }
 
         [LogAspect(typeof(FileLogger))]
-        [ValidationAspect(typeof(ArticleValidator))]
-        [SecuredOperation("admin,user")]
+       // [ValidationAspect(typeof(ArticleValidator))]
+        //[SecuredOperation("admin,user")]
         [CacheRemoveAspect("IArticleService.Get")]
         public IResult Add(Article entity)
         {
@@ -41,7 +41,7 @@ namespace Business.Concrete
             return new SuccessResult(Messages.Article_Add);
         }
 
-        [LogAspect(typeof(FileLogger))]
+       // [LogAspect(typeof(FileLogger))]
         [SecuredOperation("admin,user")]
         [CacheRemoveAspect("IArticleService.Get")]
         public IResult Delete(int id)

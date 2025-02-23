@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Newtonsoft.Json;
@@ -41,8 +42,8 @@ namespace SosyalMedya_Web.Controllers
                var roleClaims= ExtractRoleClaimsFromJwtToken.GetRoleClaims(jwtToken);
                var userId= ExtractUserIdentityFromJwtToken.GetUserIdentityFromJwtToken(jwtToken);
 
+               HttpContext.Session.SetString("Token", jwtToken);
                HttpContext.Session.SetInt32("userId", userId);
-
                 return await SignInUserByRole(roleClaims);
             }
             else

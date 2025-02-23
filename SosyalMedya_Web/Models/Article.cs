@@ -1,0 +1,11 @@
+﻿namespace SosyalMedya_Web.Models
+{
+    public class Article
+    {
+        public int TopicId { get; set; }
+        public int UserId { get; set; }
+        public int? CommentId { get; set; }
+        public string Content { get; set; }
+        public DateTime SharingDate { get; set; }
+    }
+}
