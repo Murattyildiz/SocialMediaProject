@@ -96,7 +96,7 @@ namespace Business.Concrete
         }
 
         [LogAspect(typeof(FileLogger))]
-        [SecuredOperation("admin,user")]
+        //[SecuredOperation("admin,user")]
         [CacheRemoveAspect("IArticleService.Get")]
         public IResult Update(Article entity)
         {

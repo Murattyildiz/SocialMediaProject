@@ -38,8 +38,8 @@
 
                  <div>
                      <span class="fw-bold"><i>#@articleDetail.TopicTitle</i></span>
-                        <a href="/delte-article/@articleDetail.Id" class="btn-close float-end delete-article" data-article="@articleDetail.Id" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
-                           </a>
+                        <button type="button" class="btn-close float-end pt-3 delete-article" data-article="@articleDetail.Id" data-bs-toggle="modal" data-bs-target="#staticBackdrop"></button>
+                        <button class="btn btn-outline-warning border-0 float-end get-article" data-article="@articleDetail.Id" data-bs-toggle="modal" data-bs-target="#articleUpdateModal"><i class="bi bi-pencil-square"></i></button>
                         
                  </div>
                     @Html.Raw(articleDetail.Content)
@@ -136,6 +136,42 @@
                     <div class="modal-footer">
                         <button type="button" class="btn btn-danger" data-bs-dismiss="modal">İptal</button>
                         <button type="submit" class="btn btn-success">Eminim Sil</button>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- ArticleUpdateModal -->
+<div class="modal modal-lg fade" id="articleUpdateModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="articleUpdateModalLabel1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="articleUpdateModalLabel1">Güncelleme İşlemi</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="/update-content" method="post">
+                    <input type="hidden" name="Id" class="form-control" id="Id">
+                    <input type="hidden" name="UserId" class="form-control" value="@ViewData["UserId"]">
+                    <input type="hidden" name="SharingDate" class="form-control" value="@DateTime.Now">
+
+                    <label class="form-label">Bir Konu Seçiniz:</label>
+                    <div class="input-group mt-1 mb-3">
+                        <select class="form-select select-topic" name="TopicId">
+                            <option>-Lütfen Bir Konu Başlığı Seçiniz-</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group mt-3 mb-3">
+                        <textarea id="summernote1" class="w-100" name="Content"></textarea>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">İptal</button>
+                        <button type="submit" class="btn btn-success">Güncelle</button>
                     </div>
                 </form>
             </div>
