@@ -25,10 +25,10 @@ namespace Business.Concrete
 
         public CommentManager(ICommentDal commentDal) => _commentDal = commentDal;
 
-        [LogAspect(typeof(FileLogger))]
-        [SecuredOperation("admin,user")]
+        //[LogAspect(typeof(FileLogger))]
+        //[SecuredOperation("admin,user")]
         [ValidationAspect(typeof(CommentValidator))]
-        [CacheRemoveAspect("IComemntService.Get")]
+        //[CacheRemoveAspect("IComemntService.Get")]
         public IResult Add(Comment entity)
         {
             _commentDal.Add(entity);
