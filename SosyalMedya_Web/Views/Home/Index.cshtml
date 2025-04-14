@@ -18,30 +18,30 @@
             <button class="btn btn-outline-success float-end mt-2" type="submit">Paylaş</button>
         </form>
     </div>
-    @if(Model !=null && Model.Any())
+    @if (Model != null && Model.Any())
     {
-    <!-- paylaşılan içerik başlangıç -->
-    @foreach (var articleDetail in Model)
-    {
+        <!-- paylaşılan içerik başlangıç -->
+        @foreach (var articleDetail in Model)
+        {
 
-        <div class="row w-100 mt-3">
-            <div class="contentUserImage col-2 justify-content-start h-50 py-1 px-1 text-center">
-                <div class="userImageArea border py-3 mb-4 mt-3  h-auto">
-                    <a class="d-inline-flex align-items-center text-decoration-none" href="">
-                        <img src="~/frontend/assets/images/testLogo.jpg" class="img-fluid img-thumbnail rounded-circle" width="50" height="50" alt="">
-                    </a>
-                    <h6>@articleDetail.UserName</h6>
+            <div class="row w-100 mt-3">
+                <div class="contentUserImage col-2 justify-content-start h-50 py-1 px-1 text-center">
+                    <div class="userImageArea border py-3 mb-4 mt-3  h-auto">
+                        <a class="d-inline-flex align-items-center text-decoration-none" href="">
+                            <img src="~/frontend/assets/images/testLogo.jpg" class="img-fluid img-thumbnail rounded-circle" width="50" height="50" alt="">
+                        </a>
+                        <h6>@articleDetail.UserName</h6>
+                    </div>
                 </div>
-            </div>
-            <div class="contents col-10 border ps-3 py-3 ms-0 shadow">
+                <div class="contents col-10 border ps-3 py-3 ms-0 shadow">
 
 
-                 <div>
-                     <span class="fw-bold"><i>#@articleDetail.TopicTitle</i></span>
+                    <div>
+                        <span class="fw-bold"><i>#@articleDetail.TopicTitle</i></span>
                         <button type="button" class="btn-close float-end pt-3 delete-article" data-article="@articleDetail.Id" data-bs-toggle="modal" data-bs-target="#staticBackdrop"></button>
                         <button class="btn btn-outline-warning border-0 float-end get-article" data-article="@articleDetail.Id" data-bs-toggle="modal" data-bs-target="#articleUpdateModal"><i class="bi bi-pencil-square"></i></button>
-                        
-                 </div>
+
+                    </div>
                     @Html.Raw(articleDetail.Content)
                 <div class="pt-3 ps-2 pe-2">
                     <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">

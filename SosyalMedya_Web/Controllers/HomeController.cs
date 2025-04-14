@@ -8,15 +8,15 @@ namespace SosyalMedya_Web.Controllers
 {
     public class HomeController : Controller
     {
-        [Authorize(Roles ="admin,user")]
+        [Authorize(Roles = "admin,user")]
         [HttpGet]
-       public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index()
         {
-            var httpClient= new HttpClient();
-            var responseMessage=await httpClient.GetAsync("https://localhost:5190/api/Articles/getarticlewithdetails");
-            if(responseMessage.IsSuccessStatusCode)
+            var httpClient = new HttpClient();
+            var responseMessage = await httpClient.GetAsync("https://localhost:5190/api/Articles/getarticlewithdetails");
+            if (responseMessage.IsSuccessStatusCode)
             {
-                ViewData["UserId"]= HttpContext.Session.GetInt32("userId");
+                ViewData["UserId"] = HttpContext.Session.GetInt32("userId");
                 var jsonResponse = await responseMessage.Content.ReadAsStringAsync();
                 var apiDataResponse = JsonConvert.DeserializeObject<ApiListDataResponse<ArticleDetail>>(jsonResponse);
 
