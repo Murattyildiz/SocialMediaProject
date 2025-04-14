@@ -28,7 +28,7 @@
             <div class="contentUserImage col-2 justify-content-start h-50 py-1 px-1 text-center">
                 <div class="userImageArea border py-3 mb-4 mt-3  h-auto">
                     <a class="d-inline-flex align-items-center text-decoration-none" href="">
-                        <img src="~/frontend/assets/images/testLogo.jpeg" class="img-fluid img-thumbnail rounded-circle" width="50" height="50" alt="">
+                        <img src="~/frontend/assets/images/testLogo.jpg" class="img-fluid img-thumbnail rounded-circle" width="50" height="50" alt="">
                     </a>
                     <h6>@articleDetail.UserName</h6>
                 </div>
@@ -98,25 +98,7 @@
 
 
 </div>
-<div id="topRight" class="sticky-top col-2 h-50 text-center ms-1">
-    <div class="accordion mt-3" id="accordionPanelsStayOpenExample">
-        <div class="accordion-item">
-            <h2 class="accordion-header">
-                <button class="accordion-button border border-primary" type="button" data-bs-toggle="collapse"
-                        data-bs-target="#panelsStayOpen-collapseOne" aria-expanded="true"
-                        aria-controls="panelsStayOpen-collapseOne">
-                    <i class="bi bi-hash"></i>Öne Çıkan Başlık
-                </button>
-            </h2>
-            <div id="panelsStayOpen-collapseOne" class="accordion-collapse collapse show">
-                <div class="accordion-body">
-                    <i class="bi bi-share"><strong class="ps-1">15 </strong> Paylaşım Yapıldı</i>
-                </div>
-            </div>
-        </div>
-    </div>
-
-</div>
+@await Component.InvokeAsync("_RightSide")
 <!-- Modal -->
 <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
     <div class="modal-dialog">

@@ -54,6 +54,26 @@ namespace SosyalMedya_Web.Controllers
             }
             return View();
         }
+        [Authorize(Roles = "admin,user")]
+        [HttpGet("notification")]
+        public async Task<IActionResult> Notification()
+        {
+
+            int userId = HttpContext.Session.GetInt32("UserId") ?? 0;
+            ViewData["MyArticle"] = HttpContext.Session.GetInt32("MyArticle");
+            ViewData["UserId"] = userId;
+            var responseMessage = await _httpClientFactory.CreateClient().GetAsync("https://localhost:5190/api/Articles/getarticlewithdetailsbyuserid?id=" + userId);
+            if (responseMessage.IsSuccessStatusCode)
+            {
+                var jsonResponse = await responseMessage.Content.ReadAsStringAsync();
+
+                var apiDataResponse = JsonConvert.DeserializeObject<ApiListDataResponse<ArticleDetail>>(jsonResponse);
+                ViewData["UserName"] = HttpContext.Session.GetString("UserName");
+
+                return apiDataResponse.Success ? View(apiDataResponse.Data) : RedirectToAction("Index", "Home");
+            }
+            return RedirectToAction("Index", "Home");
+        }
     }
 
 }

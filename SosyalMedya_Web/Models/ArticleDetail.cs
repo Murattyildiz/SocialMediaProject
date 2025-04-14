@@ -4,7 +4,7 @@
     {
         public int Id { get; set; }
         public int TopicId { get; set; }
-        public int UserId { get; set; }
+        public int UserId { get; set; } //Burda hata var user Id referans vermiyor
         public string TopicTitle { get; set; }
         public string UserName { get; set; }
         public string? UserImage { get; set; }
