@@ -179,7 +179,7 @@ namespace Business.Concrete
         private IResult SendMail(string Email, string randomCode)
         {
             MimeMessage mimeMessage = new();
-            MailboxAddress mailboxAddressFrom = new("Sosyal Medya Web Sitesi", "ibrahimdemircik1@gmail.com");
+            MailboxAddress mailboxAddressFrom = new("Sosyal Medya Web Sitesi", "muratyildiz42175@gmail.com");
             mimeMessage.From.Add(mailboxAddressFrom);
             MailboxAddress mailboxAddressTo = new("User", Email);
             mimeMessage.To.Add(mailboxAddressTo);
@@ -202,7 +202,7 @@ namespace Business.Concrete
             using (var client = new SmtpClient())
             {
                 client.Connect("smtp.gmail.com", 587, false);
-                client.Authenticate("ibrahimdemircik1@gmail.com", "ghjtctrheztibldo");
+                client.Authenticate("muratyildiz42175@gmail.com", "hjsxknerwpeksddw");
                 client.Send(mimeMessage);
                 client.Disconnect(true);
             }
