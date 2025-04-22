@@ -43,7 +43,8 @@ namespace SosyalMedya_Web.Controllers
                var userId= ExtractUserIdentityFromJwtToken.GetUserIdentityFromJwtToken(jwtToken);
 
                HttpContext.Session.SetString("Token", jwtToken);
-               HttpContext.Session.SetInt32("userId", userId);
+               HttpContext.Session.SetInt32("UserId", userId);
+                HttpContext.Session.SetString("Email", userForLogin.Email);
                 return await SignInUserByRole(roleClaims);
             }
             else

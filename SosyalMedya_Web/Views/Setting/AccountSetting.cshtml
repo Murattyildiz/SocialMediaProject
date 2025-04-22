@@ -129,3 +129,105 @@
         </div>
     </div>
 </div>
+
+
+
+@section scripts {
+    <script>
+        $(document).ready(function () {
+            $("#code").on("click", function (e) {
+                e.preventDefault();
+                var UserId = @Model.Id;
+                var Email = "@Model.Email";
+
+                $.ajax({
+                    type: "POST",
+                    url: "/kod",
+                    data: {
+                        UserId: UserId,
+                        Email: Email
+                    },
+                    success: function (response) {
+                        if (response.success) {
+                            window.location.href = response.url;
+                        }
+                    }, error: function (xhr, status, error) {
+                        console.log(error);
+                    }
+                })
+            })
+
+            function getCookieAccount(cname) {
+                var name = cname + "=";
+                var decodedCookie = decodeURIComponent(document.cookie);
+                var ca = decodedCookie.split(';');
+                for (var i = 0; i < ca.length; i++) {
+                    var c = ca[i];
+                    while (c.charAt(0) == ' ') {
+                        c = c.substring(1);
+                    }
+                    if (c.indexOf(name) == 0) {
+                        return c.substring(name.length, c.length);
+                    }
+                }
+                return "";
+            }
+
+            function setCookieAccount(cname, exminutes) {
+                var d = new Date();
+                d.setTime(d.getTime() + (exminutes * 60 * 1000));
+                var expiress = "expires=" + d.toGMTString();
+                document.cookie = cname + "=" + getCookieAccount("activeMenu") + ";" + expiress + ";path=/";
+            }
+
+            $("#deleteAccount").on("click", function (e) {
+                e.preventDefault();
+                var id = @Model.Id;
+
+                Swal.fire({
+                    title: "Bunu Yapmak İstediğine Emin misin ?",
+                    text: "Bu İşlemi Geri Alamazsın !",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#3085d6",
+                    cancelButtonColor: "#d33",
+                    confirmButtonText: "Evet Sil",
+                    cancelButtonText: "İptal"
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        setCookieAccount("activeMenu", -1);
+                        $.ajax({
+                            type: "DELETE",
+                            url: "/Settings/DeleteAccount/" + id,
+                            success: function (response) {
+                                if (response.success == true) {
+                                    Swal.fire({
+                                        position: "center",
+                                        text: response.message,
+                                        icon: "success",
+                                        showConfirmButton: false,
+                                        timer: 4000
+                                    }).then(() => {
+                                        window.location.href = response.url;
+                                    });
+                                } else {
+                                    Swal.fire({
+                                        position: "center",
+                                        text: response.message,
+                                        icon: "error",
+                                        showConfirmButton: false,
+                                        timer: 4000
+                                    });
+                                }
+                            }, error: function (xhr, status, error) {
+                                console.log(error);
+                            }
+                        })
+                    }
+                });
+
+
+            })
+        });
+    </script>
+}

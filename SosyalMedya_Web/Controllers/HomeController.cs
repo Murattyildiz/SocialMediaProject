@@ -16,7 +16,7 @@ namespace SosyalMedya_Web.Controllers
             var responseMessage = await httpClient.GetAsync("https://localhost:5190/api/Articles/getarticlewithdetails");
             if (responseMessage.IsSuccessStatusCode)
             {
-                ViewData["UserId"] = HttpContext.Session.GetInt32("userId");
+                ViewData["UserId"] = HttpContext.Session.GetInt32("UserId");
                 var jsonResponse = await responseMessage.Content.ReadAsStringAsync();
                 var apiDataResponse = JsonConvert.DeserializeObject<ApiListDataResponse<ArticleDetail>>(jsonResponse);
 
