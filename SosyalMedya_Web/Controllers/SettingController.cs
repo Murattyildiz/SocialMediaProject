@@ -159,6 +159,40 @@ namespace SosyalMedya_Web.Controllers
             return View();
         }
 
+        [HttpPost("sifre-guncelle")]
+        public async Task<IActionResult> ChangePassword(ChangePassword changePassword)
+        {
+            var httpClient = _httpClientFactory.CreateClient();
+            var token = HttpContext.Session.GetString("Token");
+            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            var jsonInfo = JsonConvert.SerializeObject(changePassword);
+            var content = new StringContent(jsonInfo, Encoding.UTF8, "application/json");
+            var responseMessage = await httpClient.PostAsync("https://localhost:5190/api/Auth/changepassword", content);
+            if (responseMessage.IsSuccessStatusCode)
+            {
+                var responseContent = await responseMessage.Content.ReadAsStringAsync();
+                var apiDataResponse = JsonConvert.DeserializeObject<ApiDataResponse<ChangePassword>>(responseContent);
+
+                var response = new
+                {
+                    Success = true,
+                    Message = apiDataResponse.Message,
+                    Url = "/"
+                };
+
+                return Json(response);
+            }
+            else
+            {
+                var response = new
+                {
+                    Message = "Şifre Güncellenemedi , lütfen tekrar deneyin",
+                };
+                return Json(response);
+            }
+
+        }
+
         private async Task<ApiDataResponse<UserImage>> GetUpdateUserImageResponseMessage(HttpResponseMessage responseMessage)
         {
             var responseContent=await responseMessage.Content.ReadAsStringAsync();
