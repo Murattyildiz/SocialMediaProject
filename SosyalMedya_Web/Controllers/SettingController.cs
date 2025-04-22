@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using SosyalMedya_Web.Models;
 using SosyalMedya_Web.Utilities.Helpers;
@@ -18,11 +19,11 @@ namespace SosyalMedya_Web.Controllers
 
         [HttpGet("hesap-bilgilerim")]
         public async Task<IActionResult> AccountSetting()
-        
+
         {
-            var userId=HttpContext.Session.GetInt32("UserId");
+            var userId = HttpContext.Session.GetInt32("UserId");
             var responseMessage = await _httpClientFactory.CreateClient().GetAsync("https://localhost:5190/api/Users/getbyid?id=" + userId);
-            if(responseMessage.IsSuccessStatusCode)
+            if (responseMessage.IsSuccessStatusCode)
             {
                 var jsonResponse = await responseMessage.Content.ReadAsStringAsync();
                 var apiDataResponse = JsonConvert.DeserializeObject<ApiDataResponse<UserDto>>(jsonResponse);
@@ -37,12 +38,12 @@ namespace SosyalMedya_Web.Controllers
             var jsonUserDto = JsonConvert.SerializeObject(userDto);
             var content = new StringContent(jsonUserDto, Encoding.UTF8, "application/json");
             var responseMessage = await _httpClientFactory.CreateClient().PostAsync("https://localhost:5190/api/Users/update", content);
-            if(responseMessage.IsSuccessStatusCode)
+            if (responseMessage.IsSuccessStatusCode)
             {
                 var successUpdatedUser = await GetUpdateUserResponseMessage(responseMessage);
                 TempData["Message"] = successUpdatedUser.Message;
                 TempData["Success"] = successUpdatedUser.Success;
-                return RedirectToAction("AccountSetting","Setting");
+                return RedirectToAction("AccountSetting", "Setting");
             }
             else
             {
@@ -56,7 +57,7 @@ namespace SosyalMedya_Web.Controllers
         [HttpPost("/photo-update")]
         public async Task<IActionResult> UpdateUserImage(UserImage userImage)
         {
-            if(userImage.ImagePath != null)
+            if (userImage.ImagePath != null)
             {
                 using (var formContent = new MultipartFormDataContent())
                 {
@@ -73,7 +74,7 @@ namespace SosyalMedya_Web.Controllers
                     },
                     "ImagePath", userImage.ImagePath.FileName);
 
-                    var responseMessage= await _httpClientFactory.CreateClient().PostAsync("https://localhost:5190/api/UserImages/update", formContent);
+                    var responseMessage = await _httpClientFactory.CreateClient().PostAsync("https://localhost:5190/api/UserImages/update", formContent);
                     var successUpdatedUserImage = await GetUpdateUserImageResponseMessage(responseMessage);
                     TempData["Message"] = successUpdatedUserImage.Message;
                     TempData["Success"] = successUpdatedUserImage.Success;
@@ -102,7 +103,7 @@ namespace SosyalMedya_Web.Controllers
             httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             var jsonInfo = JsonConvert.SerializeObject(verificationCodeDto);
             var content = new StringContent(jsonInfo, Encoding.UTF8, "application/json");
-            var responseMessage = await httpClient.PostAsync("https://localhost:44347/api/VerificationCodes/sendcode", content);
+            var responseMessage = await httpClient.PostAsync("https://localhost:5190/api/VerificationCodes/sendcode", content);
             if (responseMessage.IsSuccessStatusCode)
             {
                 var response = new
@@ -124,7 +125,7 @@ namespace SosyalMedya_Web.Controllers
             httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             var jsonInfo = JsonConvert.SerializeObject(verificationCodeDto);
             var content = new StringContent(jsonInfo, Encoding.UTF8, "application/json");
-            var responseMessage = await httpClient.PostAsync("https://localhost:44347/api/VerificationCodes/checkcode", content);
+            var responseMessage = await httpClient.PostAsync("https://localhost:5190/api/VerificationCodes/checkcode", content);
             if (responseMessage.IsSuccessStatusCode)
             {
                 var responseContent = await responseMessage.Content.ReadAsStringAsync();
@@ -150,9 +151,51 @@ namespace SosyalMedya_Web.Controllers
 
         }
 
+        [HttpGet("sifre-guncelle")]
+        public async Task<IActionResult> ChangePassword()
+        {
+            ViewData["UserName"] = HttpContext.Session.GetString("UserName");
+            ViewData["Email"] = HttpContext.Session.GetString("Email");
+            return View();
+        }
+        [Authorize(Roles = "admin,user")]
+        [HttpPost("sifre-guncelle")]
+        public async Task<IActionResult> ChangePassword(ChangePassword changePassword)
+        {
+            var httpClient = _httpClientFactory.CreateClient();
+            var token = HttpContext.Session.GetString("Token");
+            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            var jsonInfo = JsonConvert.SerializeObject(changePassword);
+            var content = new StringContent(jsonInfo, Encoding.UTF8, "application/json");
+            var responseMessage = await httpClient.PostAsync("https://localhost:5190/api/Auth/changepassword", content);
+            if (responseMessage.IsSuccessStatusCode)
+            {
+                var responseContent = await responseMessage.Content.ReadAsStringAsync();
+                var apiDataResponse = JsonConvert.DeserializeObject<ApiDataResponse<ChangePassword>>(responseContent);
+
+                var response = new
+                {
+                    Success = true,
+                    Message = apiDataResponse.Message,
+                    Url = "/"
+                };
+
+                return Json(response);
+            }
+            else
+            {
+                var response = new
+                {
+                    Message = "Şifre Güncellenemedi , lütfen tekrar deneyin",
+                };
+                return Json(response);
+            }
+
+        }
+
         private async Task<ApiDataResponse<UserImage>> GetUpdateUserImageResponseMessage(HttpResponseMessage responseMessage)
         {
-            var responseContent=await responseMessage.Content.ReadAsStringAsync();
+            var responseContent = await responseMessage.Content.ReadAsStringAsync();
             return JsonConvert.DeserializeObject<ApiDataResponse<UserImage>>(responseContent);
         }
 

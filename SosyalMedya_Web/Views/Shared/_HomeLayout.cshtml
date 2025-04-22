@@ -1,4 +1,4 @@
-﻿﻿@{
+﻿@{
     Layout = null;
 }
 
@@ -15,18 +15,108 @@
     <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.8/dist/sweetalert2.min.css">
+    <style>
+        /* Özel büyük boyutlu UI stilleri */
+        body {
+            font-size: 1.1rem;
+        }
+
+        /* Başlık çubuğu */
+        #headMenu {
+            padding: 1rem 0;
+        }
+
+            #headMenu a, .menu a {
+                font-size: 1.2rem;
+            }
+
+            #headMenu img {
+                width: 60px !important;
+                height: 60px !important;
+            }
+
+        /* Sol menü */
+        #leftSideMenu {
+            width: 250px;
+        }
+
+            #leftSideMenu .border {
+                padding: 1.5rem;
+            }
+
+            #leftSideMenu img {
+                width: 80px !important;
+                height: 80px !important;
+            }
+
+            #leftSideMenu h6 {
+                font-size: 1.3rem;
+                margin: 1rem 0;
+            }
+
+            #leftSideMenu .nav-link {
+                padding: 0.8rem 1rem !important;
+                margin: 0.5rem 0;
+                font-size: 1.15rem;
+            }
+
+            #leftSideMenu .btn {
+                padding: 0.7rem 1.2rem;
+                font-size: 1.1rem;
+                margin-top: 1rem;
+            }
+
+        /* İkonlar */
+        .bi {
+            font-size: 1.3rem;
+            vertical-align: middle;
+        }
+
+        /* Butonlar */
+        .btn {
+            font-size: 1.1rem;
+            padding: 0.6rem 1.1rem;
+        }
+
+        /* Yazı alanları */
+        .form-control, .form-select {
+            font-size: 1.1rem;
+            padding: 0.6rem 0.75rem;
+        }
+
+        /* Toast bildirimleri */
+        .toast {
+            font-size: 1.1rem;
+        }
+
+     /*    /* Mobil uyumluluk */
+     /*    @@media (max-width: 768px) {
+            #leftSideMenu
+
+        {
+            width: 100%;
+        }
+
+        #headMenu img {
+            width: 50px !important;
+            height: 50px !important;
+        }
+
+        } */ */
+    </style>
 </head>
 <body>
     <div class="container">
 
-        <header id="headMenu" class=" d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-3 mb-4 border-bottom mt-2">
+        <header id="headMenu" class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-3 mb-4 border-bottom mt-2">
             <div class="col-md-3 mb-2 mb-md-0">
                 <a class="d-inline-flex align-items-center link-body-emphasis text-decoration-none" href="">
-                    <img src="~/frontend/assets/images/testLogo.jpg" class="img-fluid rounded-circle me-2" width="50" height="50" alt="">Sosyal Medya Projesi
+                    <img src="~/frontend/assets/images/testLogo.jpg" class="img-fluid rounded-circle me-2" width="50" height="50" alt="">
+                    <span class="fs-4">Sosyal Medya Projesi</span>
                 </a>
             </div>
             <ul class="nav menu col-12 col-md-auto mb-2 align-items-center justify-content-center mb-md-0">
-                <li class="nav-link  px-2 me-3">
+                <li class="nav-link px-2 me-3">
                     <a href="/" class="text-decoration-none">
                         <i class="bi bi-house-fill me-2"></i>Ana Sayfa
                     </a>
@@ -41,12 +131,10 @@
                         <i class="bi bi-sliders2-vertical me-2"></i>Ayarlar
                     </a>
                 </li>
-
-
             </ul>
 
             <div class="col-md-3 text-end">
-                <a class="btn btn-outline-danger px-2 logout" href="/Auth/LogOut"><i class="bi bi-box-arrow-in-right me-2"></i>Çıkış Yap</a>
+                <a class="btn btn-outline-danger px-3 logout" href="/Auth/LogOut"><i class="bi bi-box-arrow-in-right me-2"></i>Çıkış Yap</a>
             </div>
         </header>
         <main class="d-flex justify-content-center justify-content-md-between">
@@ -56,16 +144,15 @@
                         <img src="https://localhost:5190/images/default.jpg" class="img-fluid img-thumbnail rounded-circle me-2" width="50" height="50" alt="">
                     </a>
                     <h6>@ViewData["UserName"]</h6>
-                    <div class=" align-items-center justify-content-center justify-content-md-between mb-5">
-                        <a href="" class="col-6 border py-1 px-1 mb-5  float-start text-decoration-none"><i class="bi bi-substack me-2"></i>@ViewData["MyArticle"]</a>
-                        @* <a href="" class="col-6 border py-1 px-1 mb-5 float-end text-decoration-none"><i class="bi bi-bell-fill me-2"></i>53</a> *@
-                         @await Component.InvokeAsync("_NotSeenComment")
-
+                    <div class="align-items-center justify-content-center justify-content-md-between mb-5">
+                        <a href="" class="col-6 border py-2 px-1 mb-5 float-start text-decoration-none"><i class="bi bi-substack me-2"></i>@ViewData["MyArticle"]</a>
+                        @* <a href="" class="col-6 border py-2 px-1 mb-5 float-end text-decoration-none"><i class="bi bi-bell-fill me-2"></i>53</a> *@
+                        @await Component.InvokeAsync("_NotSeenComment")
                     </div>
                 </div>
                 <ul class="nav menu d-inline col-12 col-md-auto mb-2 align-items-center justify-content-center mb-md-0">
-                    <li class="nav-link ">
-                    <li class="nav-link text-black ">
+                    <li class="nav-link text-black">
+                        <a href="/" class="text-decoration-none">
                             <i class="bi bi-house-fill me-2"></i>Ana Sayfa
                         </a>
                     </li>
@@ -74,13 +161,13 @@
                             <i class="bi bi-person-circle me-2"></i>Profilim
                         </a>
                     </li>
-                    <li class="nav-link text-black ">
+                    <li class="nav-link text-black">
                         <a href="/hesap-bilgilerim" class="text-decoration-none">
                             <i class="bi bi-sliders2-vertical me-2"></i>Ayarlar
                         </a>
                     </li>
 
-                    <a class="btn btn-outline-danger mt-2 logout" href="/Auth/LogOut"><i class="bi bi-box-arrow-in-right me-2"></i>Çıkış Yap</a>
+                    <a class="btn btn-outline-danger mt-3 logout" href="/Auth/LogOut"><i class="bi bi-box-arrow-in-right me-2"></i>Çıkış Yap</a>
 
                 </ul>
             </div>
@@ -88,7 +175,7 @@
         </main>
     </div>
     <!-- First Toast -->
-    <div class="toast-container position-top  end-0 top-0 p-3">
+    <div class="toast-container position-top end-0 top-0 p-3">
         <!-- Second Toast -->
         <div id="viewToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
             <div class="toast-header bg bg-success">
@@ -140,9 +227,7 @@
         $(document).ready(function () {
             $('.js-example-basic-single').select2();
 
-
             $(".nav-link").on("click", function () {
-
                 let activeMenuText = $(this).find("a").text().trim();
                 document.cookie = `activeMenu=${activeMenuText}`;
 
@@ -184,7 +269,6 @@
                         $(this).addClass("border border-1 border-primary");
                     }
                 }
-
             });
 
             $(".logout , .notification").on("click", function () {
