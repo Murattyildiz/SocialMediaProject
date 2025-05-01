@@ -5,10 +5,11 @@ using DataAccess.Concrete.Context;
 using Entities.Concrete;
 using Entities.DTOs;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace DataAccess.Concrete.EntityFramework
+namespace DataAccess.Concrete.Entityframework
 {
     public class EfUserFollowDal : EfEntityRepositoryBase<UserFollow, SocialMediaContext>, IUserFollowDal
     {

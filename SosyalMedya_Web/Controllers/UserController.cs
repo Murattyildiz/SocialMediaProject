@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using SosyalMedya_Web.Models;
+using System.Net.Http.Headers;
 
 namespace SosyalMedya_Web.Controllers
 {
@@ -88,16 +89,43 @@ namespace SosyalMedya_Web.Controllers
             }
 
             var httpClient = _httpClientFactory.CreateClient();
-            var response = await httpClient.PostAsync($"https://localhost:5190/api/UserFollow/follow?followerId={followerId}&followedId={followedId}", null);
+            
+            // Token'ı session'dan al ve istek başlıklarına ekle
+            var token = HttpContext.Session.GetString("Token");
+            if (!string.IsNullOrEmpty(token))
+            {
+                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            }
+
+            // UserFollow nesnesini oluştur
+            var userFollow = new UserFollow
+            {
+                FollowerId = followerId.Value,
+                FollowedId = followedId,
+                FollowDate = DateTime.Now
+            };
+
+            // API'ye gönderilecek JSON verisini hazırla
+            var content = new StringContent(
+                JsonConvert.SerializeObject(userFollow),
+                System.Text.Encoding.UTF8,
+                "application/json");
+
+            // İsteği gönder
+            var response = await httpClient.PostAsync("https://localhost:5190/api/UserFollow/follow", content);
 
             if (response.IsSuccessStatusCode)
             {
                 var jsonResponse = await response.Content.ReadAsStringAsync();
                 var result = JsonConvert.DeserializeObject<ApiResponse>(jsonResponse);
-                return Json(new { success = result.Success });
+                return Json(new { success = result.Success, message = result.Message });
             }
-
-            return Json(new { success = false });
+            else
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"API Hatası (Takip Et): Status: {response.StatusCode}, İçerik: {errorContent}");
+                return Json(new { success = false, message = $"API hatası ({response.StatusCode}): {errorContent}" });
+            }
         }
 
         [HttpPost]
@@ -110,16 +138,42 @@ namespace SosyalMedya_Web.Controllers
             }
 
             var httpClient = _httpClientFactory.CreateClient();
-            var response = await httpClient.PostAsync($"https://localhost:5190/api/UserFollow/unfollow?followerId={followerId}&followedId={followedId}", null);
+            
+            // Token'ı session'dan al ve istek başlıklarına ekle
+            var token = HttpContext.Session.GetString("Token");
+            if (!string.IsNullOrEmpty(token))
+            {
+                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            }
+
+            // UserFollow nesnesini oluştur
+            var userFollow = new
+            {
+                FollowerId = followerId.Value,
+                FollowedId = followedId
+            };
+
+            // API'ye gönderilecek JSON verisini hazırla
+            var content = new StringContent(
+                JsonConvert.SerializeObject(userFollow),
+                System.Text.Encoding.UTF8,
+                "application/json");
+
+            // İsteği gönder
+            var response = await httpClient.PostAsync("https://localhost:5190/api/UserFollow/unfollow", content);
 
             if (response.IsSuccessStatusCode)
             {
                 var jsonResponse = await response.Content.ReadAsStringAsync();
                 var result = JsonConvert.DeserializeObject<ApiResponse>(jsonResponse);
-                return Json(new { success = result.Success });
+                return Json(new { success = result.Success, message = result.Message });
             }
-
-            return Json(new { success = false });
+            else
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"API Hatası (Takibi Bırak): Status: {response.StatusCode}, İçerik: {errorContent}");
+                return Json(new { success = false, message = $"API hatası ({response.StatusCode}): {errorContent}" });
+            }
         }
 
         [HttpGet]

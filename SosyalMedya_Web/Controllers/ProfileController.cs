@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using SosyalMedya_Web.Models;
+using System.Globalization;
 
 namespace SosyalMedya_Web.Controllers
 {
@@ -88,7 +89,26 @@ namespace SosyalMedya_Web.Controllers
             {
                 var jsonResponse = await articlesResponse.Content.ReadAsStringAsync();
                 var apiDataResponse = JsonConvert.DeserializeObject<ApiListDataResponse<ArticleDetail>>(jsonResponse);
-                return apiDataResponse.Success ? View("Profile", apiDataResponse.Data) : View("Profile", new List<ArticleDetail>());
+                
+                if (apiDataResponse.Success && apiDataResponse.Data != null)
+                {
+                    // Paylaşımları en yeni tarihten eskiye doğru sırala
+                    var sortedArticles = apiDataResponse.Data
+                        .OrderByDescending(a => {
+                            // Esnek bir şekilde tarihi parse etmeye çalış
+                            if (DateTime.TryParse(a.SharingDate, CultureInfo.GetCultureInfo("tr-TR"), DateTimeStyles.None, out DateTime parsedDate))
+                            {
+                                return parsedDate;
+                            }
+                            // Parse edilemezse varsayılan değer döndür
+                            return DateTime.MinValue;
+                        })
+                        .ToList();
+                    
+                    return View("Profile", sortedArticles);
+                }
+                
+                return View("Profile", new List<ArticleDetail>());
             }
 
             return View("Profile", new List<ArticleDetail>());

@@ -152,7 +152,7 @@
                     </div>
                     <div class="d-flex justify-content-between mb-3">
                         <span>Son Paylaşım:</span>
-                        <span class="badge bg-success">@(Model?.OrderByDescending(a => a.SharingDate)?.FirstOrDefault() != null ? string.Format("{0:dd.MM.yyyy}", Model.OrderByDescending(a => a.SharingDate).FirstOrDefault().SharingDate) : "-")</span>
+                        <span class="badge bg-success">@(Model?.Any() == true ? Model.First().SharingDate : "-")</span>
                     </div>
                     <div class="d-flex justify-content-between mb-3">
                         <span>Profil Oluşturma:</span>
@@ -234,6 +234,10 @@
                     url: isFollowing ? '/User/Unfollow' : '/User/Follow',
                     type: 'POST',
                     data: { followedId: userId },
+                    beforeSend: function() {
+                        button.prop('disabled', true);
+                        button.html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>');
+                    },
                     success: function(response) {
                         if (response.success) {
                             if (isFollowing) {
@@ -246,12 +250,38 @@
                                 button.data('is-following', true);
                             }
                             loadFollowCounts();
+                            
+                            // Başarılı mesajı göster
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Başarılı!',
+                                text: isFollowing ? 'Takipten çıktınız.' : 'Takip ettiniz.',
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
                         } else {
-                            alert(response.message || 'İşlem başarısız oldu. Lütfen tekrar deneyin.');
+                            console.error('Takip işlemi başarısız:', response);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Hata!',
+                                text: response.message || 'İşlem başarısız oldu. Lütfen tekrar deneyin.'
+                            });
                         }
                     },
-                    error: function() {
-                        alert('Bir hata oluştu. Lütfen tekrar deneyin.');
+                    error: function(xhr, status, error) {
+                        console.error('Takip işlemi hatası:', error);
+                        console.error('Durum kodu:', xhr.status);
+                        console.error('Durum metni:', xhr.statusText);
+                        console.error('Sunucu yanıtı:', xhr.responseText);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Hata!',
+                            text: 'Bir hata oluştu. Lütfen tekrar deneyin. Durum kodu: ' + xhr.status
+                        });
+                    },
+                    complete: function() {
+                        button.prop('disabled', false);
+                        button.text(isFollowing ? 'Takibi Bırak' : 'Takip Et');
                     }
                 });
             });
