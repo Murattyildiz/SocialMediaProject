@@ -7,31 +7,91 @@ namespace SosyalMedya_Web.Controllers
 {
     public class ProfileController : Controller
     {
-        IHttpClientFactory _httpClientFactory;
+        private readonly IHttpClientFactory _httpClientFactory;
 
         public ProfileController(IHttpClientFactory httpClientFactory)
         {
             _httpClientFactory = httpClientFactory;
         }
+
         [Authorize(Roles = "admin,user")]
         [HttpGet("profilim")]
         public async Task<IActionResult> Profile()
         {
-            var UserId = HttpContext.Session.GetInt32("UserId");
-            ViewData["MyArticle"] = HttpContext.Session.GetInt32("MyArticle");
-            ViewData["UserId"] = UserId;
+            var userId = HttpContext.Session.GetInt32("UserId");
+            return await GetProfileView(userId.Value, true);
+        }
 
+        [Authorize(Roles = "admin,user")]
+        [HttpGet("profil/{id}")]
+        public async Task<IActionResult> UserProfile(int id)
+        {
+            var currentUserId = HttpContext.Session.GetInt32("UserId");
+            if (id == currentUserId)
+            {
+                return RedirectToAction("Profile");
+            }
+            return await GetProfileView(id, false);
+        }
+
+        private async Task<IActionResult> GetProfileView(int userId, bool isOwnProfile)
+        {
+            var currentUserId = HttpContext.Session.GetInt32("UserId");
+            ViewData["CurrentUserId"] = currentUserId;
+            ViewData["UserId"] = userId;
 
             var httpClient = _httpClientFactory.CreateClient();
-            var responseMessage = await httpClient.GetAsync("https://localhost:5190/api/Articles/getarticlewithdetailsbyuserid?id=" + UserId);
-            if (responseMessage.IsSuccessStatusCode)
+            
+            // Get user details
+            var userResponse = await httpClient.GetAsync($"https://localhost:5190/api/Users/getbyid?id={userId}");
+            if (!userResponse.IsSuccessStatusCode)
             {
-                ViewData["UserName"] = HttpContext.Session.GetString("UserName");
-                var jsonResponse = await responseMessage.Content.ReadAsStringAsync();
-                var apiDataResponse = JsonConvert.DeserializeObject<ApiListDataResponse<ArticleDetail>>(jsonResponse);
-                return apiDataResponse.Success ? View(apiDataResponse.Data) : (IActionResult)View("Veri gelmiyor");
+                return NotFound();
             }
-            return View();
+
+            var userJson = await userResponse.Content.ReadAsStringAsync();
+            var userApiResponse = JsonConvert.DeserializeObject<ApiDataResponse<UserDto>>(userJson);
+            if (!userApiResponse.Success)
+            {
+                return NotFound();
+            }
+
+            ViewData["UserName"] = $"{userApiResponse.Data.FirstName} {userApiResponse.Data.LastName}";
+            ViewData["UserImage"] = string.IsNullOrEmpty(userApiResponse.Data.ImagePath) 
+                ? "https://localhost:5190/images/default.jpg" 
+                : $"https://localhost:5190/{userApiResponse.Data.ImagePath}";
+            ViewData["UserRegistrationDate"] = "-";
+
+            // Get follow status if not own profile
+            if (!isOwnProfile && currentUserId.HasValue)
+            {
+                var followResponse = await httpClient.GetAsync($"https://localhost:5190/api/UserFollow/isfollowing?followerId={currentUserId}&followedId={userId}");
+                if (followResponse.IsSuccessStatusCode)
+                {
+                    var followJson = await followResponse.Content.ReadAsStringAsync();
+                    var followApiResponse = JsonConvert.DeserializeObject<ApiDataResponse<bool>>(followJson);
+                    ViewBag.IsFollowing = followApiResponse.Success && followApiResponse.Data;
+                }
+                else
+                {
+                    ViewBag.IsFollowing = false;
+                }
+            }
+            else
+            {
+                ViewBag.IsFollowing = false;
+            }
+
+            // Get user's articles
+            var articlesResponse = await httpClient.GetAsync($"https://localhost:5190/api/Articles/getarticlewithdetailsbyuserid?id={userId}");
+            if (articlesResponse.IsSuccessStatusCode)
+            {
+                var jsonResponse = await articlesResponse.Content.ReadAsStringAsync();
+                var apiDataResponse = JsonConvert.DeserializeObject<ApiListDataResponse<ArticleDetail>>(jsonResponse);
+                return apiDataResponse.Success ? View("Profile", apiDataResponse.Data) : View("Profile", new List<ArticleDetail>());
+            }
+
+            return View("Profile", new List<ArticleDetail>());
         }
     }
 }

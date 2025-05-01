@@ -1,0 +1,90 @@
+@model List<UserListViewModel>
+@{
+    ViewData["Title"] = "Kullanıcılar";
+    Layout = "~/Views/Shared/_HomeLayout.cshtml";
+    var currentUserId = ViewBag.CurrentUserId ?? 0;
+}
+
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-6 mx-auto">
+            <form method="get" action="/User/Users" class="d-flex">
+                <input type="text" name="searchTerm" class="form-control me-2" placeholder="Ad veya soyada göre ara..." value="@ViewBag.SearchTerm">
+                <button type="submit" class="btn btn-primary">Ara</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="row">
+        @if (Model != null && Model.Any())
+        {
+            foreach (var user in Model)
+            {
+                <div class="col-md-4 mb-4">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <img src="https://localhost:5190/images/@user.ImagePath" 
+                                 class="rounded-circle mb-3" 
+                                 alt="@user.FullName"
+                                 style="width: 100px; height: 100px; object-fit: cover;">
+                            <h5 class="card-title">@user.FullName</h5>
+                            <div class="d-flex flex-column gap-2">
+                                <a href="/profil/@user.Id" class="btn btn-outline-primary">Profili Görüntüle</a>
+                                <button class="btn @(user.IsFollowing ? "btn-danger" : "btn-success") follow-button"
+                                        data-user-id="@user.Id"
+                                        data-is-following="@user.IsFollowing.ToString().ToLower()">
+                                    @(user.IsFollowing ? "Takibi Bırak" : "Takip Et")
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12">
+                <div class="alert alert-info text-center">
+                    @(string.IsNullOrEmpty(ViewBag.SearchTerm) ? "Henüz hiç kullanıcı yok." : "Arama kriterlerine uygun kullanıcı bulunamadı.")
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Takip et/Takibi bırak butonu
+            $('.follow-button').click(function() {
+                var button = $(this);
+                var userId = button.data('user-id');
+                var isFollowing = button.data('is-following');
+                
+                $.ajax({
+                    url: isFollowing ? '/User/Unfollow' : '/User/Follow',
+                    type: 'POST',
+                    data: { followedId: userId },
+                    success: function(response) {
+                        if (response.success) {
+                            if (isFollowing) {
+                                button.removeClass('btn-danger').addClass('btn-success');
+                                button.text('Takip Et');
+                                button.data('is-following', false);
+                            } else {
+                                button.removeClass('btn-success').addClass('btn-danger');
+                                button.text('Takibi Bırak');
+                                button.data('is-following', true);
+                            }
+                        } else {
+                            alert(response.message || 'İşlem başarısız oldu. Lütfen tekrar deneyin.');
+                        }
+                    },
+                    error: function() {
+                        alert('Bir hata oluştu. Lütfen tekrar deneyin.');
+                    }
+                });
+            });
+        });
+    </script>
+} 

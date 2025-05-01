@@ -71,12 +71,12 @@ namespace Business.Concrete
         [CacheAspect(2)]
         public IDataResult<List<Topic>> GetAll()
         {
-            return new SuccessDataResult<List<Topic>>(_topicDal.GetAll(),Messages.Topics_Listed);
+            return new SuccessDataResult<List<Topic>>(_topicDal.GetAll(), Messages.Topics_Listed);
         }
 
         public IDataResult<Topic> GetEntityById(int id)
         {
-            return new SuccessDataResult<Topic>(_topicDal.Get(x=>x.Id==id),Messages.Topic_Listed);
+            return new SuccessDataResult<Topic>(_topicDal.Get(x => x.Id == id), Messages.Topic_Listed);
         }
 
         [LogAspect(typeof(FileLogger))]

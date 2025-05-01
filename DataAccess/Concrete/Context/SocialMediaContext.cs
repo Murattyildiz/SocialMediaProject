@@ -9,14 +9,14 @@ using System.Threading.Tasks;
 
 namespace DataAccess.Concrete.Context
 {
-    public class SocialMediaContext : DbContext 
+    public class SocialMediaContext : DbContext
     {
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-          
+
             optionsBuilder.UseSqlServer(@"Server=.;Database=SocialMediaa;Trusted_Connection=true;TrustServerCertificate=true;");
         }
-       
+
         public virtual DbSet<OperationClaim> OperationClaims { get; set; }
         public virtual DbSet<UserOperationClaim> UserOperationClaims { get; set; }
         public virtual DbSet<UserImage> UserImages { get; set; }
@@ -25,5 +25,7 @@ namespace DataAccess.Concrete.Context
         public virtual DbSet<Article> Articles { get; set; }
         public virtual DbSet<Comment> Comments { get; set; }
         public virtual DbSet<Topic> Topics { get; set; }
+
+        public virtual DbSet<UserFollow> UserFollows { get; set; }
     }
 }

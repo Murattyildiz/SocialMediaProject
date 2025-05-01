@@ -108,33 +108,27 @@
 <body>
     <div class="container">
 
-        <header id="headMenu" class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-3 mb-4 border-bottom mt-2">
-            <div class="col-md-3 mb-2 mb-md-0">
-                <a class="d-inline-flex align-items-center link-body-emphasis text-decoration-none" href="">
-                    <img src="~/frontend/assets/images/testLogo.jpg" class="img-fluid rounded-circle me-2" width="50" height="50" alt="">
-                    <span class="fs-4">Sosyal Medya Projesi</span>
+        <header class="py-3 mb-4 border-bottom">
+            <div class="container d-flex flex-wrap justify-content-center">
+                <a href="/" class="d-flex align-items-center mb-3 mb-lg-0 me-lg-auto link-body-emphasis text-decoration-none">
+                    <span class="fs-4">Sosyal Medya</span>
                 </a>
-            </div>
-            <ul class="nav menu col-12 col-md-auto mb-2 align-items-center justify-content-center mb-md-0">
-                <li class="nav-link px-2 me-3">
-                    <a href="/" class="text-decoration-none">
-                        <i class="bi bi-house-fill me-2"></i>Ana Sayfa
-                    </a>
-                </li>
-                <li class="nav-link px-2 text-black me-3">
-                    <a href="/profilim" class="text-decoration-none">
-                        <i class="bi bi-person-circle me-2"></i>Profilim
-                    </a>
-                </li>
-                <li class="nav-link px-2 text-black me-3">
-                    <a href="/hesap-bilgilerim" class="text-decoration-none">
-                        <i class="bi bi-sliders2-vertical me-2"></i>Ayarlar
-                    </a>
-                </li>
-            </ul>
-
-            <div class="col-md-3 text-end">
-                <a class="btn btn-outline-danger px-3 logout" href="/Auth/LogOut"><i class="bi bi-box-arrow-in-right me-2"></i>Çıkış Yap</a>
+                <div class="d-flex align-items-center">
+                    <form class="me-3" action="/User/Users" method="get">
+                        <input type="search" name="searchTerm" class="form-control" placeholder="Kullanıcı ara..." aria-label="Search">
+                    </form>
+                    <div class="dropdown text-end">
+                        <a href="#" class="d-block link-body-emphasis text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                            <img src="https://localhost:5190/images/default.jpg" alt="mdo" width="32" height="32" class="rounded-circle">
+                        </a>
+                        <ul class="dropdown-menu text-small">
+                            <li><a class="dropdown-item" href="/profilim">Profilim</a></li>
+                            <li><a class="dropdown-item" href="/hesap-bilgilerim">Hesap Ayarları</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="/cikis-yap">Çıkış Yap</a></li>
+                        </ul>
+                    </div>
+                </div>
             </div>
         </header>
         <main class="d-flex justify-content-center justify-content-md-between">

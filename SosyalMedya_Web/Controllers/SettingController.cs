@@ -60,7 +60,7 @@ namespace SosyalMedya_Web.Controllers
         public async Task<IActionResult> UpdateUserImage([FromForm] UserImage userImage)
         {
             try
-            {
+        {
                 if (userImage == null)
                 {
                     return Json(new { success = false, message = "Geçersiz form verisi." });
@@ -87,7 +87,7 @@ namespace SosyalMedya_Web.Controllers
 
                 // Dosya boyutunu kontrol et (max 5MB)
                 if (userImage.ImageFile.Length > 5 * 1024 * 1024)
-                {
+            {
                     return Json(new { success = false, message = "Dosya boyutu 5MB'dan büyük olamaz." });
                 }
 
@@ -180,7 +180,7 @@ namespace SosyalMedya_Web.Controllers
                             // Session'daki kullanıcı resmini güncelle
                             HttpContext.Session.SetString("UserImage", successResponse.Data.ImagePath);
                             return Json(new { success = true, message = "Profil resmi başarıyla güncellendi." });
-                        }
+                }
                         else
                         {
                             return Json(new { 

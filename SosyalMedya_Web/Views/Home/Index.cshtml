@@ -44,8 +44,25 @@
                     </div>
                     @Html.Raw(articleDetail.Content)
                     <div class="pt-3 ps-2 pe-2">
-                        <div class="comments-section">
-                            <h5 class="mb-3">Yorumlar</h5>
+                        <div class="d-flex justify-content-between align-items-center">
+                            @{
+                                var validComments = articleDetail.CommentDetails?.Where(x => x.Id != -1).Count() ?? 0;
+                                if (validComments > 0)
+                                {
+                                    <button class="btn btn-outline-primary show-comments-btn" type="button" data-article-id="@articleDetail.Id">
+                                        <i class="bi bi-chat-dots"></i> 
+                                        Yorumlar (@validComments)
+                        </button>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Henüz yorum yapılmamış</span>
+                                }
+                            }
+                            <button class="btn btn-outline-secondary">@articleDetail.SharingDate</button>
+                        </div>
+                        
+                        <div class="comments-section mt-3" id="comments-@articleDetail.Id" style="display: none;">
                             @if (articleDetail.CommentDetails != null && articleDetail.CommentDetails.Any())
                             {
                                 foreach (var comment in articleDetail.CommentDetails)
@@ -90,7 +107,6 @@
                                 </form>
                             </div>
                         </div>
-                        <button class="btn btn-outline-secondary float-end mt-3">@articleDetail.SharingDate</button>
                     </div>
                 </div>
 
@@ -194,6 +210,20 @@
     <script>
         $(document).ready(function () {
             $(".contents > * > img").addClass("img-fluid");
+
+            // Show/Hide Comments
+            $(".show-comments-btn").click(function() {
+                var articleId = $(this).data("article-id");
+                var commentsSection = $("#comments-" + articleId);
+                
+                if (commentsSection.is(":visible")) {
+                    commentsSection.slideUp();
+                    $(this).removeClass("btn-primary").addClass("btn-outline-primary");
+                } else {
+                    commentsSection.slideDown();
+                    $(this).removeClass("btn-outline-primary").addClass("btn-primary");
+                }
+            });
 
             $(".comment-form").on("submit", function (e) {
                 e.preventDefault();
