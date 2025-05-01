@@ -3,6 +3,7 @@ using Core.Entities.Concrete;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using System.Net.Mime;
 
 namespace Web_Api.Controllers
 {
@@ -21,7 +22,7 @@ namespace Web_Api.Controllers
         public IActionResult GetAll()
         {
             var result = _userImageService.GetAll();
-            if (result.Success)
+            if (!result.Success)
             {
                 return BadRequest(result);
             }
@@ -32,48 +33,63 @@ namespace Web_Api.Controllers
         public IActionResult GetAllByUserId(int userId)
         {
             var result = _userImageService.GetUserImages(userId);
-            if (result.Success)
+            if (!result.Success)
             {
-                return Ok(result);
+                return BadRequest(result);
             }
-            return BadRequest(result);
+            return Ok(result);
         }
 
         [HttpPost("add")]
-        public IActionResult Add([FromForm] int userId, [FromForm] IFormFile userImage)
+        [Consumes("multipart/form-data")]
+        public IActionResult Add([FromForm] int userId, [FromForm] IFormFile imageFile)
         {
-            var result = _userImageService.Add(userImage, userId);
-            if (result.Success)
+            if (imageFile == null || imageFile.Length == 0)
             {
-                return Ok(result);
+                return BadRequest(new { Success = false, Message = "Dosya seçilmedi." });
             }
-            return BadRequest(result);
+
+            var result = _userImageService.Add(imageFile, userId);
+            if (!result.Success)
+            {
+                return BadRequest(result);
+            }
+            return Ok(result);
         }
 
         [HttpPost("update")]
-        public IActionResult Update([FromForm] UserImage userImage, [FromForm] IFormFile imageFile)
+        [Consumes("multipart/form-data")]
+        public IActionResult Update([FromForm] int Id, [FromForm] int UserId, [FromForm] IFormFile ImageFile, [FromForm] string ImagePath)
         {
-
-            var result = _userImageService.Update(userImage, imageFile);
-            if (result.Success)
+            if (ImageFile == null || ImageFile.Length == 0)
             {
-                return Ok(result);
+                return BadRequest(new { Success = false, Message = "Dosya seçilmedi." });
             }
-            return BadRequest(result);
+
+            var userImage = new UserImage
+            {
+                Id = Id,
+                UserId = UserId,
+                ImagePath = ImagePath
+            };
+
+            var result = _userImageService.Update(userImage, ImageFile);
+            if (!result.Success)
+            {
+                return BadRequest(result);
+            }
+            return Ok(result);
         }
-
-
 
         [HttpDelete("delete")]
         public IActionResult Delete(UserImage userImage)
         {
             var result = _userImageService.Delete(userImage);
-            if (result.Success)
+            if (!result.Success)
             {
-                return Ok(result);
+                return BadRequest(result);
             }
-            return BadRequest(result);
+            return Ok(result);
         }
     }
-
 }

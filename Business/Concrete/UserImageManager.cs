@@ -29,7 +29,7 @@ namespace Business.Concrete
         }
 
         [LogAspect(typeof(FileLogger))]
-        [SecuredOperation("admin,user")]
+        //[SecuredOperation("admin,user")]
         [CacheRemoveAspect("IUserImageService.Get")]
         public IResult Add(IFormFile file, int userId)
         {
@@ -56,7 +56,7 @@ namespace Business.Concrete
         }
 
         [LogAspect(typeof(FileLogger))]
-        [SecuredOperation("admin,user")]
+        //[SecuredOperation("admin,user")]
         [CacheRemoveAspect("IUserImageService.Get")]
         public IResult Delete(UserImage userImage)
         {
@@ -76,7 +76,7 @@ namespace Business.Concrete
             return new SuccessResult(Messages.UserImageDeleted);
         }
         [LogAspect(typeof(FileLogger))]
-        [SecuredOperation("admin,user")]
+        //[SecuredOperation("admin,user")]
         [CacheRemoveAspect("IUserImageService.Get")]
         public IResult DeleteAllImagesOfUserByUserId(int userId)
         {
@@ -113,7 +113,7 @@ namespace Business.Concrete
         }
 
         [LogAspect(typeof(FileLogger))]
-        [SecuredOperation("admin,user")]
+        //[SecuredOperation("admin,user")]
         [CacheRemoveAspect("IUserImageService.Get")]
         public IResult Update(UserImage userImage, IFormFile file)
         {

@@ -28,16 +28,29 @@ namespace Business.Concrete
         //[LogAspect(typeof(FileLogger))]
         //[SecuredOperation("admin,user")]
         [ValidationAspect(typeof(CommentValidator))]
-        //[CacheRemoveAspect("IComemntService.Get")]
+        [CacheRemoveAspect("ICommentService.GetAll")]
+        [CacheRemoveAspect("ICommentService.GetbyArticleId")]
+        [CacheRemoveAspect("IArticleService.GetArticleDetails")]
+        [CacheRemoveAspect("IArticleService.GetArticleDetailsById")]
         public IResult Add(Comment entity)
         {
-            _commentDal.Add(entity);
-            return new SuccessResult(Messages.Comment_Add);
+            try
+            {
+                _commentDal.Add(entity);
+                return new SuccessResult(Messages.Comment_Add);
+            }
+            catch (Exception ex)
+            {
+                return new ErrorResult($"Yorum eklenirken bir hata oluştu: {ex.Message}");
+            }
         }
 
         [LogAspect(typeof(FileLogger))]
-        [SecuredOperation("admin,user")]
-        [CacheRemoveAspect("IComemntService.Get")]
+        //[SecuredOperation("admin,user")]
+        [CacheRemoveAspect("ICommentService.GetAll")]
+        [CacheRemoveAspect("ICommentService.GetbyArticleId")]
+        [CacheRemoveAspect("IArticleService.GetArticleDetails")]
+        [CacheRemoveAspect("IArticleService.GetArticleDetailsById")]
         public IResult AllCommentDeleteByUserId(int id)
         {
             var deleteComments = _commentDal.GetAll(x => x.UserId == id);
@@ -63,55 +76,74 @@ namespace Business.Concrete
         }
 
         [LogAspect(typeof(FileLogger))]
-        [SecuredOperation("admin,user")]
-        [CacheRemoveAspect("ICommentService.Get")]
+        //[SecuredOperation("admin,user")]
+        [CacheRemoveAspect("ICommentService.GetAll")]
+        [CacheRemoveAspect("ICommentService.GetbyArticleId")]
+        [CacheRemoveAspect("IArticleService.GetArticleDetails")]
+        [CacheRemoveAspect("IArticleService.GetArticleDetailsById")]
         public IResult Delete(int id)
         {
-            var deleteComment = _commentDal.Get(x => x.Id == id);
-            if (deleteComment != null)
+            try
             {
-                _commentDal.Delete(deleteComment);
+                if (id <= 0)
+                {
+                    return new ErrorResult("Geçersiz yorum ID'si.");
+                }
 
+                var deleteComment = _commentDal.Get(x => x.Id == id);
+                if (deleteComment == null)
+                {
+                    return new ErrorResult(Messages.CommentNotFound);
+                }
+
+                _commentDal.Delete(deleteComment);
                 return new SuccessResult(Messages.Comment_Delete);
             }
-            return new ErrorResult(Messages.CommentNotFound);
+            catch (Exception ex)
+            {
+                return new ErrorResult($"Yorum silinirken bir hata oluştu: {ex.Message}");
+            }
         }
-        [CacheAspect(1)]
+        [CacheAspect(100)]
         public IDataResult<List<Comment>> FalseComment()
         {
             return new SuccessDataResult<List<Comment>>(_commentDal.GetAll(x=>x.Status==false), Messages.FalseComment);
         }
-        [CacheAspect(1)]
+        [CacheAspect(duration: 100)]
         public IDataResult<List<Comment>> GetAll()
         {
-            return new SuccessDataResult<List<Comment>>(_commentDal.GetAll(),Messages.Comments_Listed);
+            return new SuccessDataResult<List<Comment>>(_commentDal.GetAll(), Messages.Comments_Listed);
         }
 
+        [CacheAspect(duration: 100)]
+        public IDataResult<Comment> GetEntityById(int id)
+        {
+            return new SuccessDataResult<Comment>(_commentDal.Get(x => x.Id == id), Messages.Comment_Listed);
+        }
+
+        [CacheAspect(duration: 100)]
         public IDataResult<List<Comment>> GetbyArticleId(int id)
         {
             return new SuccessDataResult<List<Comment>>(_commentDal.GetAll(x => x.ArticleId == id), Messages.Comments_List);
-        }
-
-        public IDataResult<Comment> GetEntityById(int id)
-        {
-            return new SuccessDataResult<Comment>(_commentDal.Get(x=>x.Id == id),Messages.Comment_Listed);
         }
 
         public IDataResult<List<Comment>> NotSeen(int id)
         {
             throw new NotImplementedException();
         }
-        [CacheAspect(1)]
+        [CacheAspect(100)]
         public IDataResult<List<Comment>> TrueComment()
         {
-
             return new SuccessDataResult<List<Comment>>(_commentDal.GetAll(x => x.Status == true), Messages.FalseComment);
         }
 
         [LogAspect(typeof(FileLogger))]
-        [SecuredOperation("admin,user")]
+        //[SecuredOperation("admin,user")]
         [ValidationAspect(typeof(CommentValidator))]
-        [CacheRemoveAspect("IComemntService.Get")]
+        [CacheRemoveAspect("ICommentService.GetAll")]
+        [CacheRemoveAspect("ICommentService.GetbyArticleId")]
+        [CacheRemoveAspect("IArticleService.GetArticleDetails")]
+        [CacheRemoveAspect("IArticleService.GetArticleDetailsById")]
         public IResult Update(Comment entity)
         {
             var updatedComment = _commentDal.Get(x => x.Id == entity.Id);

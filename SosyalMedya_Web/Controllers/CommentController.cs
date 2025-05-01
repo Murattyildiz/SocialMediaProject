@@ -19,40 +19,124 @@ namespace SosyalMedya_Web.Controllers
 
         [Authorize(Roles = "admin,user")]
         [HttpPost("post-comment")]
-        public async Task<IActionResult> Comment(Comment comment)
+        public async Task<IActionResult> Comment([FromBody] Comment comment)
         {
-            var httpClient = _httpClientFactory.CreateClient();
-            var jsonComment = JsonConvert.SerializeObject(comment);
-            var content = new StringContent(jsonComment, Encoding.UTF8, "application/json");
-            var token = HttpContext.Session.GetString("Token");
-            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            var responseMessage = await httpClient.PostAsync("https://localhost:5190/api/Comments/add", content);
-            if (responseMessage.IsSuccessStatusCode)
+            try
             {
-                return RedirectToAction("Index", "Home");
-            }
-            return RedirectToAction("Index", "Home");
-        }
+                // Kullanıcı bilgilerini session'dan al
+                var userId = HttpContext.Session.GetInt32("UserId");
+                var userName = HttpContext.Session.GetString("UserName");
+                
+                if (!userId.HasValue)
+                {
+                    return Json(new { success = false, message = "Oturum süreniz dolmuş olabilir. Lütfen tekrar giriş yapın." });
+                }
 
+                if (comment == null || comment.ArticleId <= 0 || string.IsNullOrEmpty(comment.CommentText))
+                {
+                    return Json(new { success = false, message = "Geçersiz yorum verisi." });
+                }
+
+                // Yorum nesnesini oluştur
+                var commentToAdd = new
+                {
+                    ArticleId = comment.ArticleId,
+                    UserId = userId.Value,
+                    CommentText = comment.CommentText.Trim(),
+                    CommentDate = DateTime.Now,
+                    Status = true
+                };
+
+                var httpClient = _httpClientFactory.CreateClient();
+                var jsonComment = JsonConvert.SerializeObject(commentToAdd);
+                var content = new StringContent(jsonComment, Encoding.UTF8, "application/json");
+                var token = HttpContext.Session.GetString("Token");
+
+                if (string.IsNullOrEmpty(token))
+                {
+                    return Json(new { success = false, message = "Oturum süreniz dolmuş olabilir. Lütfen tekrar giriş yapın." });
+                }
+
+                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                var responseMessage = await httpClient.PostAsync("https://localhost:5190/api/Comments/add", content);
+                var responseContent = await responseMessage.Content.ReadAsStringAsync();
+
+                if (responseMessage.IsSuccessStatusCode)
+                {
+                    var userImage = HttpContext.Session.GetString("UserImage") ?? "images/default.jpg";
+                    
+                    return Json(new { 
+                        success = true, 
+                        userName = userName,
+                        userImage = userImage,
+                        commentDate = DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss"),
+                        message = "Yorum başarıyla eklendi."
+                    });
+                }
+                
+                return Json(new { 
+                    success = false, 
+                    message = "Yorum eklenirken bir hata oluştu: " + responseContent 
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { 
+                    success = false, 
+                    message = "Yorum eklenirken bir hata oluştu: " + ex.Message 
+                });
+            }
+        }
 
         [Authorize(Roles = "admin,user")]
         [HttpPost("delete-comment")]
-        public async Task<IActionResult> DeleteArticle(int id)
+        public async Task<IActionResult> DeleteComment(int id)
         {
-            var httpClient = _httpClientFactory.CreateClient();
-            //var jsonArticle = JsonConvert.SerializeObject(article);
-            //var content = new StringContent(jsonArticle, Encoding.UTF8, "application/json");
-            var token = HttpContext.Session.GetString("Token");
-            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            var responseMessage = await httpClient.DeleteAsync("https://localhost:5190/api/Comments/delete?id=" + id);
-            if (responseMessage.IsSuccessStatusCode)
+            try
             {
+                if (id <= 0)
+                {
+                    return Json(new { success = false, message = "Geçersiz yorum ID'si." });
+                }
 
-                TempData["Message"] = "Yorum Silindi";
-                TempData["Success"] = true;
-                return RedirectToAction("Index", "Home");
+                var userId = HttpContext.Session.GetInt32("UserId");
+                if (!userId.HasValue)
+                {
+                    return Json(new { success = false, message = "Oturum süreniz dolmuş olabilir. Lütfen tekrar giriş yapın." });
+                }
+
+                var httpClient = _httpClientFactory.CreateClient();
+                var token = HttpContext.Session.GetString("Token");
+                
+                if (string.IsNullOrEmpty(token))
+                {
+                    return Json(new { success = false, message = "Oturum süreniz dolmuş olabilir. Lütfen tekrar giriş yapın." });
+                }
+
+                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                
+                // Yorumu silme işlemini gerçekleştir
+                var responseMessage = await httpClient.DeleteAsync($"https://localhost:5190/api/Comments/delete?id={id}");
+                
+                if (responseMessage.IsSuccessStatusCode)
+                {
+                    // Silme işlemi başarılı olduktan sonra cache'i temizle
+                    var clearCacheResponse = await httpClient.PostAsync("https://localhost:5190/api/Comments/clearcache", null);
+                    
+                    return Json(new { 
+                        success = true, 
+                        message = "Yorum başarıyla silindi.",
+                        requiresRefresh = true 
+                    });
+                }
+
+                var errorContent = await responseMessage.Content.ReadAsStringAsync();
+                return Json(new { success = false, message = $"Yorum silinirken bir hata oluştu: {errorContent}" });
             }
-            return View();
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = $"Yorum silinirken bir hata oluştu: {ex.Message}" });
+            }
         }
         [Authorize(Roles = "admin,user")]
         [HttpGet("notification")]
@@ -75,5 +159,4 @@ namespace SosyalMedya_Web.Controllers
             return RedirectToAction("Index", "Home");
         }
     }
-
 }

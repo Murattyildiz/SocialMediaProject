@@ -47,8 +47,39 @@ namespace Web_Api.Controllers
         [HttpDelete("delete")]
         public ActionResult Delete(int id)
         {
-            IResult result = _commentService.Delete(id);
-            return result.Success ? Ok(result) : BadRequest(result);
+            try
+            {
+                if (id <= 0)
+                {
+                    return BadRequest(new { success = false, message = "Geçersiz yorum ID'si." });
+                }
+
+                var comment = _commentService.GetEntityById(id);
+                if (!comment.Success || comment.Data == null)
+                {
+                    return BadRequest(new { success = false, message = "Yorum bulunamadı." });
+                }
+
+                var result = _commentService.Delete(id);
+                if (result.Success)
+                {
+                    // Başarılı silme işlemi
+                    Console.WriteLine($"Yorum başarıyla silindi. ID: {id}");
+                    return Ok(new { success = true, message = "Yorum başarıyla silindi." });
+                }
+                else
+                {
+                    // Silme işlemi başarısız
+                    Console.WriteLine($"Yorum silme başarısız. ID: {id}, Hata: {result.Message}");
+                    return BadRequest(new { success = false, message = result.Message });
+                }
+            }
+            catch (Exception ex)
+            {
+                // Hata durumunda
+                Console.WriteLine($"Yorum silme hatası. ID: {id}, Hata: {ex.Message}");
+                return BadRequest(new { success = false, message = $"Yorum silinirken bir hata oluştu: {ex.Message}" });
+            }
         }
     }
 }

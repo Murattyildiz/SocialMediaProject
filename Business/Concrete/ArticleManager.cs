@@ -70,19 +70,19 @@ namespace Business.Concrete
             return new SuccessDataResult<List<Article>>(_articleDal.GetAll(), Messages.Articles_Listed);
         }
 
-        [CacheAspect(2)]
+        [CacheAspect(duration: 1)]
         public IDataResult<List<ArticleDetailDto>> GetArticleDetails()
         {
             return new SuccessDataResult<List<ArticleDetailDto>>(_articleDal.GetArticleDetails(), Messages.ArticleWithDetailListed);
         }
 
-        [CacheAspect(2)]
+        [CacheAspect(duration: 1)]
         public IDataResult<ArticleDetailDto> GetArticleDetailsById(int id)
         {
             return new SuccessDataResult<ArticleDetailDto>(_articleDal.GetArticleDetailsById(x => x.Id == id), Messages.ArticleWithDetailListed);
         }
 
-        [CacheAspect(2)]
+        [CacheAspect(duration: 1)]
         public IDataResult<List<ArticleDetailDto>> GetArticleDetailsByUserId(int id)
         {
             return new SuccessDataResult<List<ArticleDetailDto>>(_articleDal.GetArticleDetails(x => x.UserId == id), Messages.ArticleWithDetailListed);

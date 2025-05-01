@@ -111,17 +111,23 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form action="/photo-update" method="post" enctype="multipart/form-data">
+                <form action="/photo-update" method="post" enctype="multipart/form-data" id="imageUpdateForm">
                     <input type="hidden" name="Id" value="@Model.ImageId">
                     <input type="hidden" name="UserId" value="@Model.Id">
-                    <div class="input-group mt-3 mb-3">
-                        <input type="file" name="ImagePath" class="form-control" id="inputGroupFile02">
-                        <label class="input-group-text" for="inputGroupFile02">Profil Fotoğrafı</label>
+                    <div class="text-center mb-3">
+                        <img id="imagePreview" src="#" alt="Seçilen resim önizlemesi" style="max-width: 200px; max-height: 200px; display: none;" class="img-thumbnail">
                     </div>
-
+                    <div class="input-group">
+                        <input type="file" name="ImageFile" class="form-control" id="imageInput" accept="image/*">
+                        <label class="input-group-text" for="imageInput">Profil Fotoğrafı</label>
+                    </div>
+                    <div class="small text-muted mt-2">
+                        Desteklenen formatlar: JPG, JPEG, PNG, GIF<br>
+                        Maksimum dosya boyutu: 5MB
+                    </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-danger" data-bs-dismiss="modal">İptal</button>
-                        <button type="submit" class="btn btn-success">Kaydet</button>
+                        <button type="submit" class="btn btn-success" id="submitButton" disabled>Kaydet</button>
                     </div>
                 </form>
             </div>
@@ -228,6 +234,94 @@
 
 
             })
+
+            // Resim önizleme
+            $("#imageInput").change(function () {
+                const file = this.files[0];
+                const submitButton = $("#submitButton");
+                
+                if (file) {
+                    // Dosya boyutu kontrolü
+                    if (file.size > 5 * 1024 * 1024) {
+                        alert("Dosya boyutu 5MB'dan büyük olamaz!");
+                        this.value = '';
+                        $("#imagePreview").hide();
+                        submitButton.prop('disabled', true);
+                        return;
+                    }
+
+                    // Dosya tipi kontrolü
+                    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+                    if (!validTypes.includes(file.type)) {
+                        alert("Sadece JPG, JPEG, PNG ve GIF formatları desteklenmektedir!");
+                        this.value = '';
+                        $("#imagePreview").hide();
+                        submitButton.prop('disabled', true);
+                        return;
+                    }
+
+                    // Önizleme göster
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        $("#imagePreview").attr('src', e.target.result).show();
+                    }
+                    reader.readAsDataURL(file);
+                    submitButton.prop('disabled', false);
+                } else {
+                    $("#imagePreview").hide();
+                    submitButton.prop('disabled', true);
+                }
+            });
+
+            // Form gönderimi
+            $("#imageUpdateForm").on('submit', function(e) {
+                e.preventDefault();
+                $("#submitButton").prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Yükleniyor...');
+                
+                const formData = new FormData(this);
+                
+                $.ajax({
+                    url: '/photo-update',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        if (response.success) {
+                            location.reload();
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Hata',
+                                text: response.message || 'Profil resmi güncellenirken bir hata oluştu.',
+                                confirmButtonText: 'Tamam'
+                            });
+                            $("#submitButton").prop('disabled', false).html('Kaydet');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('XHR Status:', status);
+                        console.error('Error:', error);
+                        console.error('Response:', xhr.responseText);
+                        
+                        let errorMessage = 'Profil resmi güncellenirken bir hata oluştu.';
+                        try {
+                            const response = JSON.parse(xhr.responseText);
+                            errorMessage = response.message || errorMessage;
+                        } catch (e) {
+                            console.error('JSON parse error:', e);
+                        }
+
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Hata',
+                            text: errorMessage,
+                            confirmButtonText: 'Tamam'
+                        });
+                        $("#submitButton").prop('disabled', false).html('Kaydet');
+                    }
+                });
+            });
         });
     </script>
 }

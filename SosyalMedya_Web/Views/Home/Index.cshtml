@@ -44,45 +44,53 @@
                     </div>
                     @Html.Raw(articleDetail.Content)
                     <div class="pt-3 ps-2 pe-2">
-                        <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            Yorumlar
-                        </button>
-                        <ul class="dropdown dropdown-menu comment w-50 h-50 overflow-auto px-3">
-                            <h4 class="text-center">Yorumlar</h4>
+                        <div class="comments-section">
+                            <h5 class="mb-3">Yorumlar</h5>
                             @if (articleDetail.CommentDetails != null && articleDetail.CommentDetails.Any())
                             {
-
-
-                                <!-- Yorum Alanı Başlangıç -->
-                                @foreach (var comment in articleDetail.CommentDetails)
+                                foreach (var comment in articleDetail.CommentDetails)
                                 {
-
-
-                                    <div class="d-flex flex-wrap col-12 col-md-auto mb-2 align-items-center justify-content-center">
-                                        <div class="contentUserImage col-2 justify-content-start h-25 py-1 px-1 text-center">
-                                            <div class="userImageArea border py-3 mb-4 mt-3 h-auto">
-                                                <a class="d-inline-flex align-items-center text-decoration-none" href="#">
-                                                    <img class="img-fluid rounded-circle " src="https://localhost:5190/@comment.Image" width="50" height="50" alt="">
-                                                </a>
-                                                <h6>@comment.UserName</h6>
+                                    <div class="comment mb-3 p-3 border rounded">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="d-flex align-items-center">
+                                                @if (string.IsNullOrEmpty(comment.Image))
+                                                {
+                                                    <img src="https://localhost:5190/images/default.jpg" class="rounded-circle me-2" width="40" height="40" />
+                                                }
+                                                else
+                                                {
+                                                    <img src="https://localhost:5190/@comment.Image" class="rounded-circle me-2" width="40" height="40" />
+                                                }
+                                                <div>
+                                                    <strong>@comment.UserName</strong>
+                                                    <small class="text-muted d-block">@comment.CommentDate.ToString("dd.MM.yyyy HH:mm:ss")</small>
+                                                </div>
                                             </div>
+                                            @if (comment.UserId == ViewBag.UserId || User.IsInRole("admin"))
+                                            {
+                                                <button class="btn btn-sm btn-danger delete-comment" data-comment="@comment.Id" data-bs-toggle="modal" data-bs-target="#deleteCommentModal">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            }
                                         </div>
-                                        <div class="col-10 border ps-3 py-3 ms-0 shadow">
-                                            @comment.CommentText
-                                        </div>
+                                        <p class="mt-2 mb-0">@comment.CommentText</p>
                                     </div>
                                 }
-                                <!-- Yorum Alanı Bitiş -->
                             }
-                            <div class="dropdown-item w-100 mb-3">
-                                <form action="#" method="post">
-                                    <label for="commentText">Yorumunuz : </label>
-                                    <input type="text" name="CommentText" id="commentText" class="form-control" placeholder="Yorumunuzu buraya yazın">
-                                    <button type="button" class="btn btn-success float-end mt-2 mb-2 comment-form" data-id="@articleDetail.Id">Yorum Yap</button>
+                            else
+                            {
+                                <p class="text-muted">Henüz yorum yapılmamış.</p>
+                            }
+                            <div class="comment-form-section mt-3">
+                                <form class="comment-form" data-article-id="@articleDetail.Id">
+                                    <div class="input-group">
+                                        <input type="text" name="CommentText" class="form-control" placeholder="Yorumunuzu yazın...">
+                                        <button type="submit" class="btn btn-primary">Gönder</button>
+                                    </div>
                                 </form>
                             </div>
-                        </ul>
-                        <button class="btn btn-outline-secondary float-end">@articleDetail.SharingDate</button>
+                        </div>
+                        <button class="btn btn-outline-secondary float-end mt-3">@articleDetail.SharingDate</button>
                     </div>
                 </div>
 
@@ -161,36 +169,96 @@
         </div>
     </div>
 </div>
+
+<!-- Yorum Silme Modal -->
+<div class="modal fade" id="deleteCommentModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="deleteCommentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteCommentModalLabel">Yorum Silme</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Bu yorumu silmek istediğinize emin misiniz?</p>
+                <p class="text-danger">Bu işlem geri alınamaz!</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteComment">Sil</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section scripts {
     <script>
         $(document).ready(function () {
             $(".contents > * > img").addClass("img-fluid");
 
-            $(".comment-form").on("click", function (e) {
+            $(".comment-form").on("submit", function (e) {
                 e.preventDefault();
-                var form = $(this).closest("form");
-                var ArticleId = $(this).data("id");
-                var UserId = @ViewData["UserId"];
+                var form = $(this);
+                var ArticleId = form.data("article-id");
                 var CommentText = form.find("input[name=CommentText]").val();
-                var CommentDate = new Date().toLocaleString();
-                console.log(ArticleId + ", " + UserId + " , " + CommentText + " , " + CommentDate);
+                
+                if (!CommentText || CommentText.trim() === "") {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Uyarı!',
+                        text: 'Lütfen bir yorum yazın.'
+                    });
+                    return;
+                }
+
+                var comment = {
+                    ArticleId: parseInt(ArticleId),
+                    CommentText: CommentText.trim()
+                };
 
                 $.ajax({
                     type: "POST",
                     url: "/post-comment",
-                    data: {
-                        ArticleId: ArticleId,
-                        UserId: UserId,
-                        CommentText: CommentText,
-                        CommentDate: CommentDate
+                    contentType: "application/json",
+                    data: JSON.stringify(comment),
+                    beforeSend: function() {
+                        form.find('button[type="submit"]').prop('disabled', true)
+                            .html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Gönderiliyor...');
                     },
                     success: function (response) {
-                        window.location.reload();
-                    }, error: function (xhr, status, error) {
-                        console.log(error);
+                        if (response.success) {
+                            form[0].reset();
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Başarılı!',
+                                text: 'Yorumunuz başarıyla eklendi.',
+                                timer: 1000,
+                                showConfirmButton: false
+                            }).then(function() {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Hata!',
+                                text: response.message || 'Yorum eklenirken bir hata oluştu.'
+                            });
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('Yorum ekleme hatası:', error);
+                        console.error('Sunucu yanıtı:', xhr.responseText);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Hata!',
+                            text: 'Yorum eklenirken bir hata oluştu. Lütfen daha sonra tekrar deneyin.'
+                        });
+                    },
+                    complete: function() {
+                        form.find('button[type="submit"]').prop('disabled', false)
+                            .html('Gönder');
                     }
-                })
-            })
+                });
+            });
 
             $(".get-article").on("click", function (e) {
                 e.preventDefault();
@@ -238,7 +306,66 @@
                 $("#commentId").val(CommentId);
             })
 
+            let commentIdToDelete = null;
 
+            // Yorum silme butonuna tıklandığında
+            $('.delete-comment').click(function() {
+                commentIdToDelete = $(this).data('comment');
+            });
+
+            // Silme işlemini onaylama
+            $('#confirmDeleteComment').click(function() {
+                if (!commentIdToDelete) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Hata!',
+                        text: 'Silinecek yorum bulunamadı.'
+                    });
+                    return;
+                }
+
+                $.ajax({
+                    url: '/delete-comment',
+                    type: 'POST',
+                    data: { id: commentIdToDelete },
+                    beforeSend: function() {
+                        $('#confirmDeleteComment').prop('disabled', true)
+                            .html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Siliniyor...');
+                    },
+                    success: function(response) {
+                        if (response && response.success) {
+                            $('#deleteCommentModal').modal('hide');
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Başarılı!',
+                                text: response.message || 'Yorum başarıyla silindi.',
+                                timer: 1000,
+                                showConfirmButton: false
+                            }).then(function() {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Hata!',
+                                text: response.message || 'Yorum silinirken bir hata oluştu.'
+                            });
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Silme hatası:', error);
+                        console.error('Sunucu yanıtı:', xhr.responseText);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Hata!',
+                            text: 'Yorum silinirken bir hata oluştu. Lütfen daha sonra tekrar deneyin.'
+                        });
+                    },
+                    complete: function() {
+                        $('#confirmDeleteComment').prop('disabled', false).html('Sil');
+                    }
+                });
+            });
         });
     </script>
 }
