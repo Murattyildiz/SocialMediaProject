@@ -36,36 +36,36 @@ namespace SosyalMedya_Web.Controllers
             try
             {
                 var httpClient = _httpClientFactory.CreateClient();
-                
+
                 // Get user details
                 var userResponse = await httpClient.GetAsync($"https://localhost:5190/api/Users/getbyid?id={userId}");
                 if (userResponse.IsSuccessStatusCode)
                 {
                     var userJson = await userResponse.Content.ReadAsStringAsync();
                     var userApiResponse = JsonConvert.DeserializeObject<ApiDataResponse<UserDto>>(userJson);
-                    
+
                     if (userApiResponse.Success && userApiResponse.Data != null)
                     {
                         // Hem orijinal anahtarları hem de yeni anahtarları doldur
                         // Orijinal anahtarlar
                         ViewData["UserName"] = $"{userApiResponse.Data.FirstName} {userApiResponse.Data.LastName}";
-                        ViewData["UserImage"] = string.IsNullOrEmpty(userApiResponse.Data.ImagePath) 
-                            ? "https://localhost:5190/images/default.jpg" 
+                        ViewData["UserImage"] = string.IsNullOrEmpty(userApiResponse.Data.ImagePath)
+                            ? "https://localhost:5190/images/default.jpg"
                             : $"https://localhost:5190/{userApiResponse.Data.ImagePath}";
-                        
+
                         // Yeni anahtarlar
                         ViewData["CurrentUserName"] = $"{userApiResponse.Data.FirstName} {userApiResponse.Data.LastName}";
-                        ViewData["CurrentUserImage"] = string.IsNullOrEmpty(userApiResponse.Data.ImagePath) 
-                            ? "https://localhost:5190/images/default.jpg" 
+                        ViewData["CurrentUserImage"] = string.IsNullOrEmpty(userApiResponse.Data.ImagePath)
+                            ? "https://localhost:5190/images/default.jpg"
                             : $"https://localhost:5190/{userApiResponse.Data.ImagePath}";
-                        
+
                         // Get article count
                         var articlesResponse = await httpClient.GetAsync($"https://localhost:5190/api/Articles/getarticlewithdetailsbyuserid?id={userId}");
                         if (articlesResponse.IsSuccessStatusCode)
                         {
                             var articlesJson = await articlesResponse.Content.ReadAsStringAsync();
                             var articlesApiResponse = JsonConvert.DeserializeObject<ApiListDataResponse<ArticleDetail>>(articlesJson);
-                            
+
                             if (articlesApiResponse.Success && articlesApiResponse.Data != null)
                             {
                                 ViewData["MyArticle"] = articlesApiResponse.Data.Count;
@@ -86,14 +86,14 @@ namespace SosyalMedya_Web.Controllers
                 ViewData["UserName"] = "Kullanıcı";
                 ViewData["UserImage"] = "https://localhost:5190/images/default.jpg";
                 ViewData["MyArticle"] = 0;
-                
+
                 ViewData["CurrentUserName"] = "Kullanıcı";
                 ViewData["CurrentUserImage"] = "https://localhost:5190/images/default.jpg";
                 ViewData["CurrentUserArticleCount"] = 0;
-                
+
                 // Log the error
                 Console.WriteLine($"Error setting user ViewData: {ex.Message}");
             }
         }
     }
-} 
+}

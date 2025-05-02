@@ -60,7 +60,7 @@ namespace SosyalMedya_Web.Controllers
         public async Task<IActionResult> UpdateUserImage([FromForm] UserImage userImage)
         {
             try
-        {
+            {
                 if (userImage == null)
                 {
                     return Json(new { success = false, message = "Geçersiz form verisi." });
@@ -79,7 +79,7 @@ namespace SosyalMedya_Web.Controllers
                 // Dosya uzantısını kontrol et
                 var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
                 var extension = Path.GetExtension(userImage.ImageFile.FileName)?.ToLower();
-                
+
                 if (string.IsNullOrEmpty(extension) || !allowedExtensions.Contains(extension))
                 {
                     return Json(new { success = false, message = "Sadece .jpg, .jpeg, .png ve .gif uzantılı dosyalar yüklenebilir." });
@@ -87,7 +87,7 @@ namespace SosyalMedya_Web.Controllers
 
                 // Dosya boyutunu kontrol et (max 5MB)
                 if (userImage.ImageFile.Length > 5 * 1024 * 1024)
-            {
+                {
                     return Json(new { success = false, message = "Dosya boyutu 5MB'dan büyük olamaz." });
                 }
 
@@ -123,7 +123,7 @@ namespace SosyalMedya_Web.Controllers
                         // Önce mevcut görseli kontrol et
                         var checkImageUrl = $"https://localhost:5190/api/UserImages/getallbyuserid?userId={userImage.UserId}";
                         var checkResponse = await client.GetAsync(checkImageUrl);
-                        
+
                         if (!checkResponse.IsSuccessStatusCode)
                         {
                             return Json(new { success = false, message = "Kullanıcı görsel bilgileri alınamadı." });
@@ -157,18 +157,18 @@ namespace SosyalMedya_Web.Controllers
                         }
 
                         var responseMessage = await client.PostAsync(apiUrl, formContent);
-                        
+
                         if (!responseMessage.IsSuccessStatusCode)
                         {
                             var errorContent = await responseMessage.Content.ReadAsStringAsync();
                             var statusCode = (int)responseMessage.StatusCode;
-                            
+
                             Console.WriteLine($"API Error - Status Code: {statusCode}");
                             Console.WriteLine($"Error Content: {errorContent}");
 
                             var errorResponse = JsonConvert.DeserializeObject<ApiDataResponse<object>>(errorContent);
                             var errorMessage = errorResponse?.Message ?? errorContent;
-                            
+
                             return Json(new { success = false, message = errorMessage });
                         }
 
@@ -180,12 +180,13 @@ namespace SosyalMedya_Web.Controllers
                             // Session'daki kullanıcı resmini güncelle
                             HttpContext.Session.SetString("UserImage", successResponse.Data.ImagePath);
                             return Json(new { success = true, message = "Profil resmi başarıyla güncellendi." });
-                }
+                        }
                         else
                         {
-                            return Json(new { 
-                                success = false, 
-                                message = successResponse?.Message ?? "Profil resmi güncellenirken bir hata oluştu." 
+                            return Json(new
+                            {
+                                success = false,
+                                message = successResponse?.Message ?? "Profil resmi güncellenirken bir hata oluştu."
                             });
                         }
                     }

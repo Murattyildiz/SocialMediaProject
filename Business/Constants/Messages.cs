@@ -71,6 +71,7 @@ namespace Business.Constants
         public static string ClaimNotFound;
         public static string TopicNotFound;
         public static string UserClaimExist;
+        
         internal static string FalseComment;
         internal static string Comments_Listed;
         internal static string ClaimUpdate;

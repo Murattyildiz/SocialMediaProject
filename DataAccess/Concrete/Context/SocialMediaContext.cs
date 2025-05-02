@@ -27,5 +27,6 @@ namespace DataAccess.Concrete.Context
         public virtual DbSet<Topic> Topics { get; set; }
 
         public virtual DbSet<UserFollow> UserFollows { get; set; }
+        public virtual DbSet<Message> Messages { get; set; }
     }
 }

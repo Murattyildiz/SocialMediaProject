@@ -42,7 +42,7 @@ namespace SosyalMedya_Web.Controllers
             ViewData["UserId"] = userId;
 
             var httpClient = _httpClientFactory.CreateClient();
-            
+
             // Get user details
             var userResponse = await httpClient.GetAsync($"https://localhost:5190/api/Users/getbyid?id={userId}");
             if (!userResponse.IsSuccessStatusCode)
@@ -59,8 +59,8 @@ namespace SosyalMedya_Web.Controllers
 
             // Profil sayfasında görüntülenecek kullanıcı bilgileri
             ViewData["UserName"] = $"{userApiResponse.Data.FirstName} {userApiResponse.Data.LastName}";
-            ViewData["UserImage"] = string.IsNullOrEmpty(userApiResponse.Data.ImagePath) 
-                ? "https://localhost:5190/images/default.jpg" 
+            ViewData["UserImage"] = string.IsNullOrEmpty(userApiResponse.Data.ImagePath)
+                ? "https://localhost:5190/images/default.jpg"
                 : $"https://localhost:5190/{userApiResponse.Data.ImagePath}";
             ViewData["UserRegistrationDate"] = "-";
 
@@ -90,7 +90,7 @@ namespace SosyalMedya_Web.Controllers
             {
                 var jsonResponse = await articlesResponse.Content.ReadAsStringAsync();
                 var apiDataResponse = JsonConvert.DeserializeObject<ApiListDataResponse<ArticleDetail>>(jsonResponse);
-                
+
                 if (apiDataResponse.Success && apiDataResponse.Data != null)
                 {
                     // Paylaşımları en yeni tarihten eskiye doğru sırala
@@ -105,10 +105,10 @@ namespace SosyalMedya_Web.Controllers
                             return DateTime.MinValue;
                         })
                         .ToList();
-                    
+
                     return View("Profile", sortedArticles);
                 }
-                
+
                 return View("Profile", new List<ArticleDetail>());
             }
 

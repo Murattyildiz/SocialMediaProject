@@ -30,6 +30,9 @@
                             <h5 class="card-title">@user.FullName</h5>
                             <div class="d-flex flex-column gap-2">
                                 <a href="/profil/@user.Id" class="btn btn-outline-primary">Profili Görüntüle</a>
+                                <a href="/mesajlar/@user.Id" class="btn btn-outline-info">
+                                    <i class="bi bi-chat-dots"></i> Mesaj Gönder
+                                </a>
                                 <button class="btn @(user.IsFollowing ? "btn-danger" : "btn-success") follow-button"
                                         data-user-id="@user.Id"
                                         data-is-following="@user.IsFollowing.ToString().ToLower()">

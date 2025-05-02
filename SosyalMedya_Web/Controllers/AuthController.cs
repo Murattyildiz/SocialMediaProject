@@ -17,7 +17,7 @@ namespace SosyalMedya_Web.Controllers
         private readonly IHttpClientFactory _httpClientFactory;
         public AuthController(IHttpClientFactory httpClientFactory)
         {
-            _httpClientFactory = httpClientFactory;            
+            _httpClientFactory = httpClientFactory;
         }
         [HttpGet("giris-yap")]
         public IActionResult Login()
@@ -28,45 +28,45 @@ namespace SosyalMedya_Web.Controllers
         [HttpPost("LoginPost")]
         public async Task<IActionResult> LoginPost(UserForLogin userForLogin)
         {
-            var httpClient =_httpClientFactory.CreateClient();
+            var httpClient = _httpClientFactory.CreateClient();
             var jsonLogin = JsonConvert.SerializeObject(userForLogin);
-            StringContent conten=new StringContent(jsonLogin,Encoding.UTF8,"application/json");
-            var responseMessage=await httpClient.PostAsync("https://localhost:5190/api/auth/login", conten);
+            StringContent conten = new StringContent(jsonLogin, Encoding.UTF8, "application/json");
+            var responseMessage = await httpClient.PostAsync("https://localhost:5190/api/auth/login", conten);
 
-            if(responseMessage.IsSuccessStatusCode)
+            if (responseMessage.IsSuccessStatusCode)
             {
-               var userForLoginSuccess=await GetUserForLogin(responseMessage);
-                TempData["Message"]=userForLoginSuccess.Message;
+                var userForLoginSuccess = await GetUserForLogin(responseMessage);
+                TempData["Message"] = userForLoginSuccess.Message;
                 TempData["Success"] = userForLoginSuccess.Success;
-               var jwtToken = userForLoginSuccess.Data.Token;
-               var roleClaims= ExtractRoleClaimsFromJwtToken.GetRoleClaims(jwtToken);
-               var userId= ExtractUserIdentityFromJwtToken.GetUserIdentityFromJwtToken(jwtToken);
+                var jwtToken = userForLoginSuccess.Data.Token;
+                var roleClaims = ExtractRoleClaimsFromJwtToken.GetRoleClaims(jwtToken);
+                var userId = ExtractUserIdentityFromJwtToken.GetUserIdentityFromJwtToken(jwtToken);
 
-               HttpContext.Session.SetString("Token", jwtToken);
-               HttpContext.Session.SetInt32("UserId", userId);
+                HttpContext.Session.SetString("Token", jwtToken);
+                HttpContext.Session.SetInt32("UserId", userId);
                 HttpContext.Session.SetString("Email", userForLogin.Email);
                 return await SignInUserByRole(roleClaims);
             }
             else
             {
                 var userForLoginError = await GetUserForLogin(responseMessage);
-                TempData["LoginFail"]=userForLoginError.Message;
+                TempData["LoginFail"] = userForLoginError.Message;
                 return RedirectToAction("Login", "Auth");
             }
 
 
-           
+
         }
 
         private async Task<IActionResult> SignInUserByRole(List<string> roleClaims)
         {
-            if(roleClaims != null && roleClaims.Any())
+            if (roleClaims != null && roleClaims.Any())
             {
-                if(roleClaims.Contains(AdminRole))
+                if (roleClaims.Contains(AdminRole))
                 {
                     return await SignInUserByRoleClaim(AdminRole);
                 }
-                if(roleClaims.Contains(UserRole))
+                if (roleClaims.Contains(UserRole))
                 {
                     return await SignInUserByRoleClaim(UserRole);
                 }

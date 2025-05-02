@@ -8,6 +8,7 @@ using Core.Utilities.Interceptors;
 using Core.Utilities.Security.JWT;
 using DataAccess.Abstract;
 using DataAccess.Concrete.Entityframework;
+using DataAccess.Concrete.EntityFramework;
 using Entities.Concrete;
 using Microsoft.AspNetCore.Identity;
 using System;
@@ -53,6 +54,9 @@ namespace Business.DependencyResolvers.Autofac
 
             builder.RegisterType<UserFollowManager>().As<IUserFollowService>().SingleInstance();
             builder.RegisterType<EfUserFollowDal>().As<IUserFollowDal>().SingleInstance();
+            
+            builder.RegisterType<MessageManager>().As<IMessageService>().SingleInstance();
+            builder.RegisterType<EfMessageDal>().As<IMessageDal>().SingleInstance();
 
             var assembly = System.Reflection.Assembly.GetExecutingAssembly();
 

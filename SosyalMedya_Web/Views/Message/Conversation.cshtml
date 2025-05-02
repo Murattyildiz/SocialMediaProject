@@ -1,0 +1,163 @@
+@using Microsoft.AspNetCore.Http.Extensions
+@using Microsoft.AspNetCore.Http
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+@model List<SosyalMedya_Web.Models.MessageDto>
+@{
+    ViewData["Title"] = "Mesajlaşma";
+    Layout = "~/Views/Shared/_HomeLayout.cshtml";
+    var otherUserId = ViewData["OtherUserId"];
+    var otherUserName = ViewData["OtherUserName"];
+    var otherUserImage = ViewData["OtherUserImage"];
+    var currentUserId = ViewData["CurrentUserId"];
+    var token = HttpContextAccessor.HttpContext?.Session.GetString("Token");
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white d-flex align-items-center">
+                    <a href="/mesajlar" class="btn btn-light btn-sm me-3">
+                        <i class="bi bi-arrow-left"></i>
+                    </a>
+                    <img src="@otherUserImage" class="rounded-circle me-2" alt="@otherUserName" width="40" height="40">
+                    <h5 class="mb-0">@otherUserName</h5>
+                </div>
+                <div class="card-body" style="height: 400px; overflow-y: auto;" id="messageContainer">
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var message in Model)
+                        {
+                            bool isFromCurrentUser = message.SenderId == (int)currentUserId;
+                            <div class="d-flex @(isFromCurrentUser ? "justify-content-end" : "justify-content-start") mb-3">
+                                @if (!isFromCurrentUser)
+                                {
+                                    <img src="@message.SenderImage" class="rounded-circle me-2 align-self-end" alt="" width="30" height="30">
+                                }
+                                <div class="@(isFromCurrentUser ? "bg-primary text-white" : "bg-light") rounded p-3" style="max-width: 70%;">
+                                    <p class="mb-0">@message.Content</p>
+                                    <small class="@(isFromCurrentUser ? "text-white-50" : "text-muted") d-block text-end">
+                                        @message.SentDate.ToString("HH:mm")
+                                        @if (isFromCurrentUser)
+                                        {
+                                            <i class="bi @(message.IsRead ? "bi-check-all" : "bi-check")"></i>
+                                        }
+                                    </small>
+                                </div>
+                                @if (isFromCurrentUser)
+                                {
+                                    <img src="@message.SenderImage" class="rounded-circle ms-2 align-self-end" alt="" width="30" height="30">
+                                }
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="bi bi-chat-dots text-muted" style="font-size: 3rem;"></i>
+                            <p class="mt-3 text-muted">Henüz mesaj gönderilmemiş.</p>
+                            <p class="text-muted small">Aşağıdaki metin kutusunu kullanarak ilk mesajınızı gönderebilirsiniz.</p>
+                        </div>
+                    }
+                </div>
+                <div class="card-footer bg-light">
+                    <form id="messageForm" class="d-flex">
+                        <input type="hidden" id="receiverId" value="@otherUserId">
+                        <input type="text" id="messageContent" class="form-control me-2" placeholder="Mesajınızı yazın...">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-send"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    $(document).ready(function() {
+        // Token'ı session'dan al
+        var authToken = "@token";
+        
+        // Sayfa yüklendiğinde mesajları aşağı kaydır
+        var messageContainer = document.getElementById('messageContainer');
+        messageContainer.scrollTop = messageContainer.scrollHeight;
+        
+        // Mesaj gönderme işlemi
+        $('#messageForm').submit(function(e) {
+            e.preventDefault();
+            
+            var content = $('#messageContent').val();
+            var receiverId = parseInt($('#receiverId').val());
+            
+            if (!content.trim()) {
+                return;
+            }
+            
+            var message = {
+                receiverId: receiverId,
+                content: content
+            };
+
+            console.log("Gönderilecek mesaj:", message);
+            
+            $.ajax({
+                url: '/Message/SendMessage',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(message),
+                beforeSend: function(xhr) {
+                    $('#messageContent').prop('disabled', true);
+                    // Token eklenebilir
+                    if (authToken) {
+                        xhr.setRequestHeader('Authorization', 'Bearer ' + authToken);
+                    }
+                },
+                success: function(response) {
+                    console.log("Başarılı yanıt:", response);
+                    if (response.success) {
+                        $('#messageContent').val('');
+                        // Mesaj gönderildikten sonra sayfayı yenile
+                        location.reload();
+                    } else {
+                        alert(response.message || 'Mesaj gönderilemedi.');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error("AJAX hatası:", status, error);
+                    console.log("Sunucu yanıtı:", xhr.responseText);
+                    alert('Mesaj gönderirken bir hata oluştu: ' + error);
+                },
+                complete: function() {
+                    $('#messageContent').prop('disabled', false);
+                    $('#messageContent').focus();
+                }
+            });
+        });
+        
+        // Periyodik olarak mesajları kontrol et
+        function checkNewMessages() {
+            var lastMessageDate = '@(Model != null && Model.Any() ? Model.Last().SentDate.ToString("yyyy-MM-ddTHH:mm:ss") : DateTime.MinValue.ToString("yyyy-MM-ddTHH:mm:ss"))';
+            var receiverId = $('#receiverId').val();
+            
+            $.ajax({
+                url: '/Message/GetNewMessages',
+                type: 'GET',
+                data: { 
+                    otherUserId: receiverId,
+                    lastMessageDate: lastMessageDate
+                },
+                success: function(response) {
+                    if (response.success && response.hasNewMessages) {
+                        location.reload();
+                    }
+                }
+            });
+        }
+        
+        // 5 saniyede bir yeni mesajları kontrol et
+        setInterval(checkNewMessages, 5000);
+    });
+</script>
+} 

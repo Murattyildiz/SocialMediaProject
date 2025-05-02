@@ -26,6 +26,9 @@
                                 </button>
                                 @if (!isOwnProfile)
                                 {
+                                    <a href="/mesajlar/@UserId" class="btn btn-outline-info me-2">
+                                        <i class="bi bi-chat-dots"></i> Mesaj Gönder
+                                    </a>
                                     <button class="btn @(isFollowing ? "btn-danger" : "btn-success") follow-button"
                                             data-user-id="@UserId"
                                             data-is-following="@isFollowing.ToString().ToLower()">
