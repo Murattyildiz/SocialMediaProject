@@ -7,11 +7,11 @@ using System.Net.Http.Headers;
 namespace SosyalMedya_Web.Controllers
 {
     [Authorize]
-    public class UserController : Controller
+    public class UserController : BaseController
     {
         private readonly IHttpClientFactory _httpClientFactory;
 
-        public UserController(IHttpClientFactory httpClientFactory)
+        public UserController(IHttpClientFactory httpClientFactory) : base(httpClientFactory)
         {
             _httpClientFactory = httpClientFactory;
         }
@@ -203,11 +203,25 @@ namespace SosyalMedya_Web.Controllers
             if (response.IsSuccessStatusCode)
             {
                 var jsonResponse = await response.Content.ReadAsStringAsync();
-                var result = JsonConvert.DeserializeObject<ApiListDataResponse<UserFollowDto>>(jsonResponse);
-                return Json(new { success = true, data = result.Data });
+                Console.WriteLine($"Followers API Response: {jsonResponse}"); // Debug logging
+                var apiResponse = JsonConvert.DeserializeObject<ApiDataResponse<List<UserFollowDto>>>(jsonResponse);
+                
+                if (apiResponse != null && apiResponse.Success && apiResponse.Data != null)
+                {
+                    return Json(new { success = true, data = apiResponse.Data });
+                }
+                else
+                {
+                    Console.WriteLine("API returned success but data is null or empty");
+                    return Json(new { success = false, message = "Takipçi bulunamadı" });
+                }
             }
-
-            return Json(new { success = false });
+            else
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Followers API Error: {response.StatusCode}, Content: {errorContent}");
+                return Json(new { success = false, message = $"API hatası: {response.StatusCode}" });
+            }
         }
 
         [HttpGet]
@@ -219,11 +233,25 @@ namespace SosyalMedya_Web.Controllers
             if (response.IsSuccessStatusCode)
             {
                 var jsonResponse = await response.Content.ReadAsStringAsync();
-                var result = JsonConvert.DeserializeObject<ApiListDataResponse<UserFollowDto>>(jsonResponse);
-                return Json(new { success = true, data = result.Data });
+                Console.WriteLine($"Following API Response: {jsonResponse}"); // Debug logging
+                var apiResponse = JsonConvert.DeserializeObject<ApiDataResponse<List<UserFollowDto>>>(jsonResponse);
+                
+                if (apiResponse != null && apiResponse.Success && apiResponse.Data != null)
+                {
+                    return Json(new { success = true, data = apiResponse.Data });
+                }
+                else
+                {
+                    Console.WriteLine("API returned success but data is null or empty");
+                    return Json(new { success = false, message = "Takip edilen kullanıcı bulunamadı" });
+                }
             }
-
-            return Json(new { success = false });
+            else
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Following API Error: {response.StatusCode}, Content: {errorContent}");
+                return Json(new { success = false, message = $"API hatası: {response.StatusCode}" });
+            }
         }
     }
 } 

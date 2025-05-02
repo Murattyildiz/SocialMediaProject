@@ -119,13 +119,13 @@
                     </form>
                     <div class="dropdown text-end">
                         <a href="#" class="d-block link-body-emphasis text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                            <img src="https://localhost:5190/images/default.jpg" alt="mdo" width="32" height="32" class="rounded-circle">
+                            <img src="@ViewData["CurrentUserImage"]" alt="mdo" width="32" height="32" class="rounded-circle">
                         </a>
                         <ul class="dropdown-menu text-small">
                             <li><a class="dropdown-item" href="/profilim">Profilim</a></li>
                             <li><a class="dropdown-item" href="/hesap-bilgilerim">Hesap Ayarları</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="/cikis-yap">Çıkış Yap</a></li>
+                            <li><a class="dropdown-item logout-link" href="javascript:void(0)">Çıkış Yap</a></li>
                         </ul>
                     </div>
                 </div>
@@ -134,12 +134,12 @@
         <main class="d-flex justify-content-center justify-content-md-between">
             <div id="leftSideMenu" class="sticky-top col-2 justify-content-start h-50 py-1 px-1 text-center">
                 <div class="border border-1 mb-4 mt-3 shadow h-auto">
-                    <a class="d-inline-flex align-items-center link-body-emphasis text-decoration-none mt-2" href="">
-                        <img src="https://localhost:5190/images/default.jpg" class="img-fluid img-thumbnail rounded-circle me-2" width="50" height="50" alt="">
+                    <a class="d-inline-flex align-items-center link-body-emphasis text-decoration-none mt-2" href="/profilim">
+                        <img src="@ViewData["CurrentUserImage"]" class="img-fluid img-thumbnail rounded-circle me-2" width="50" height="50" alt="">
                     </a>
-                    <h6>@ViewData["UserName"]</h6>
+                    <h6>@ViewData["CurrentUserName"]</h6>
                     <div class="align-items-center justify-content-center justify-content-md-between mb-5">
-                        <a href="" class="col-6 border py-2 px-1 mb-5 float-start text-decoration-none"><i class="bi bi-substack me-2"></i>@ViewData["MyArticle"]</a>
+                        <a href="" class="col-6 border py-2 px-1 mb-5 float-start text-decoration-none"><i class="bi bi-substack me-2"></i>@ViewData["CurrentUserArticleCount"]</a>
                         @* <a href="" class="col-6 border py-2 px-1 mb-5 float-end text-decoration-none"><i class="bi bi-bell-fill me-2"></i>53</a> *@
                         @await Component.InvokeAsync("_NotSeenComment")
                     </div>
@@ -161,7 +161,7 @@
                         </a>
                     </li>
 
-                    <a class="btn btn-outline-danger mt-3 logout" href="/Auth/LogOut"><i class="bi bi-box-arrow-in-right me-2"></i>Çıkış Yap</a>
+                    <a class="btn btn-outline-danger mt-3 logout-link" href="javascript:void(0)"><i class="bi bi-box-arrow-in-right me-2"></i>Çıkış Yap</a>
 
                 </ul>
             </div>
@@ -221,6 +221,24 @@
         $(document).ready(function () {
             $('.js-example-basic-single').select2();
 
+            // Çıkış yap butonları için olay dinleyicisi
+            $(".logout-link").on("click", function () {
+                // Session ve cookie'leri temizle
+                document.cookie = "activeMenu=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+                
+                // Diğer tüm çerezleri temizle
+                var cookies = document.cookie.split(";");
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = cookies[i];
+                    var eqPos = cookie.indexOf("=");
+                    var name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+                    document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+                }
+                
+                // Kullanıcıyı giriş sayfasına yönlendir
+                window.location.href = "/giris-yap";
+            });
+
             $(".nav-link").on("click", function () {
                 let activeMenuText = $(this).find("a").text().trim();
                 document.cookie = `activeMenu=${activeMenuText}`;
@@ -264,10 +282,6 @@
                     }
                 }
             });
-
-            $(".logout , .notification").on("click", function () {
-                setCookie("activeMenu", -1);
-            })
         });
     </script>
     @await RenderSectionAsync("Scripts", required: false)

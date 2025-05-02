@@ -240,14 +240,19 @@
                     },
                     success: function(response) {
                         if (response.success) {
+                            // Immediately update button state without refreshing
                             if (isFollowing) {
                                 button.removeClass('btn-danger').addClass('btn-success');
                                 button.text('Takip Et');
                                 button.data('is-following', false);
+                                // Also update the attribute for next click
+                                button.attr('data-is-following', 'false');
                             } else {
                                 button.removeClass('btn-success').addClass('btn-danger');
                                 button.text('Takibi Bırak');
                                 button.data('is-following', true);
+                                // Also update the attribute for next click
+                                button.attr('data-is-following', 'true');
                             }
                             loadFollowCounts();
                             
@@ -309,17 +314,32 @@
                     success: function(response) {
                         if (response.success) {
                             var html = '';
+                            if (response.data && response.data.length > 0) {
                             response.data.forEach(function(follower) {
+                                    console.log('Follower data:', follower); // Debug
+                                    var followerName = follower.followerName || 'İsimsiz Kullanıcı';
+                                    var imageUrl = 'https://localhost:5190/images/' + (follower.followerImage || 'default.jpg');
+                                    
                                 html += `
-                                    <a href="/profil/${follower.id}" class="list-group-item list-group-item-action">
+                                        <a href="/profil/${follower.followerId}" class="list-group-item list-group-item-action">
                                         <div class="d-flex align-items-center">
-                                            <img src="https://localhost:5190/images/${follower.imagePath}" class="rounded-circle me-2" width="32" height="32">
-                                            <span>${follower.fullName}</span>
+                                                <img src="${imageUrl}" class="rounded-circle me-2" width="32" height="32">
+                                                <span>${followerName}</span>
                                         </div>
                                     </a>`;
                             });
-                            $('#followersList').html(html || '<div class="text-center p-3">Henüz takipçi yok</div>');
+                            } else {
+                                html = '<div class="text-center p-3">Henüz takipçi yok</div>';
+                            }
+                            $('#followersList').html(html);
+                        } else {
+                            $('#followersList').html('<div class="text-center p-3 text-danger">Takipçiler yüklenirken bir hata oluştu</div>');
                         }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Takipçiler yüklenirken hata:', error);
+                        console.error('Sunucu yanıtı:', xhr.responseText);
+                        $('#followersList').html('<div class="text-center p-3 text-danger">Takipçiler yüklenirken bir hata oluştu</div>');
                     }
                 });
             });
@@ -332,18 +352,33 @@
                     success: function(response) {
                         if (response.success) {
                             var html = '';
+                            if (response.data && response.data.length > 0) {
+                                console.log('Following data:', response.data); // Debug
                             response.data.forEach(function(following) {
+                                    var followedName = following.followedName || 'İsimsiz Kullanıcı';
+                                    var imageUrl = 'https://localhost:5190/images/' + (following.followedImage || 'default.jpg');
+                                    
                                 html += `
-                                    <a href="/profil/${following.id}" class="list-group-item list-group-item-action">
+                                        <a href="/profil/${following.followedId}" class="list-group-item list-group-item-action">
                                         <div class="d-flex align-items-center">
-                                            <img src="https://localhost:5190/images/${following.imagePath}" class="rounded-circle me-2" width="32" height="32">
-                                            <span>${following.fullName}</span>
+                                                <img src="${imageUrl}" class="rounded-circle me-2" width="32" height="32">
+                                                <span>${followedName}</span>
                                         </div>
                                     </a>`;
                             });
-                            $('#followingList').html(html || '<div class="text-center p-3">Henüz takip edilen kullanıcı yok</div>');
+                            } else {
+                                html = '<div class="text-center p-3">Henüz takip edilen kullanıcı yok</div>';
+                            }
+                            $('#followingList').html(html);
+                        } else {
+                            $('#followingList').html('<div class="text-center p-3 text-danger">Takip edilen kullanıcılar yüklenirken bir hata oluştu</div>');
                         }
-                    }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Takip edilenler yüklenirken hata:', error);
+                        console.error('Sunucu yanıtı:', xhr.responseText);
+                        $('#followingList').html('<div class="text-center p-3 text-danger">Takip edilen kullanıcılar yüklenirken bir hata oluştu</div>');
+                        }
                 });
             });
             

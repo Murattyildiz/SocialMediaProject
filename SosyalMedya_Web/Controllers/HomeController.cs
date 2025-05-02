@@ -8,8 +8,15 @@ using System.Globalization;
 
 namespace SosyalMedya_Web.Controllers
 {
-    public class HomeController : Controller
+    public class HomeController : BaseController
     {
+        private readonly IHttpClientFactory _httpClientFactory;
+
+        public HomeController(IHttpClientFactory httpClientFactory) : base(httpClientFactory)
+        {
+            _httpClientFactory = httpClientFactory;
+        }
+
         [Authorize(Roles = "admin,user")]
         [HttpGet]
         public async Task<IActionResult> Index()

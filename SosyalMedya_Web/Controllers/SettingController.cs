@@ -10,11 +10,11 @@ using System;
 
 namespace SosyalMedya_Web.Controllers
 {
-    public class SettingController : Controller
+    public class SettingController : BaseController
     {
         private readonly IHttpClientFactory _httpClientFactory;
 
-        public SettingController(IHttpClientFactory httpClientFactory)
+        public SettingController(IHttpClientFactory httpClientFactory) : base(httpClientFactory)
         {
             _httpClientFactory = httpClientFactory;
         }

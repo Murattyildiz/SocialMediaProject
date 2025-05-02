@@ -6,11 +6,11 @@ using System.Globalization;
 
 namespace SosyalMedya_Web.Controllers
 {
-    public class ProfileController : Controller
+    public class ProfileController : BaseController
     {
         private readonly IHttpClientFactory _httpClientFactory;
 
-        public ProfileController(IHttpClientFactory httpClientFactory)
+        public ProfileController(IHttpClientFactory httpClientFactory) : base(httpClientFactory)
         {
             _httpClientFactory = httpClientFactory;
         }
@@ -57,6 +57,7 @@ namespace SosyalMedya_Web.Controllers
                 return NotFound();
             }
 
+            // Profil sayfasında görüntülenecek kullanıcı bilgileri
             ViewData["UserName"] = $"{userApiResponse.Data.FirstName} {userApiResponse.Data.LastName}";
             ViewData["UserImage"] = string.IsNullOrEmpty(userApiResponse.Data.ImagePath) 
                 ? "https://localhost:5190/images/default.jpg" 
