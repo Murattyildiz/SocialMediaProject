@@ -130,6 +130,16 @@
         var processedMessageIds = {};
         var messageQueue = [];
         var isProcessingQueue = false;
+        var sentMessageContents = {}; // To track recently sent message contents
+        
+        // Mevcut mesajların ID'lerini kaydet (ilk gönderilen mesajların duplikasyonunu önlemek için)
+        @if (Model != null && Model.Any())
+        {
+            foreach (var msg in Model)
+            {
+                @:processedMessageIds[@msg.Id] = true;
+            }
+        }
         
         // Sayfa yüklendiğinde mesajları aşağı kaydır
         scrollToBottom();
@@ -191,6 +201,10 @@
                 isSending: true
             };
             
+            // Mesaj içeriğini takip etmek için saklayalım
+            var messageKey = currentMessage.content.trim();
+            sentMessageContents[messageKey] = true;
+            
             appendMessage(tempMessage, true);
             scrollToBottom();
             
@@ -210,16 +224,26 @@
                         if (response.isDuplicate) {
                             // Duplikasyon kontrol edildi, geçici mesajı normal göster
                             $('#' + tempMessageId + ' .message-bubble').removeClass('sending-message');
-                        } else {
-                            // Geçici mesajı kaldır ve gerçek mesajı ekle
+                        } else if (response.messageData) {
+                            // Sunucudan dönen mesaj ID'sini işlenmiş olarak işaretle
+                            if (response.messageData.id) {
+                                processedMessageIds[response.messageData.id] = true;
+                            }
+                            
+                            // Geçici mesajı kaldır
                             $('#' + tempMessageId).remove();
-                            appendMessage(response.messageData);
-                            scrollToBottom();
                             
                             // Son mesaj zamanını güncelle
-                            if (response.messageData && response.messageData.sentDate) {
+                            if (response.messageData.sentDate) {
                                 lastMessageDate = response.messageData.sentDate;
                             }
+                            
+                            // Gerçek mesajı ekle, ancak ID kontrolünü atlayarak (zaten işlenmiş olarak işaretledik)
+                            appendMessage(response.messageData, false, true);
+                            scrollToBottom();
+                            
+                            // İçerik takibinden kaldır
+                            delete sentMessageContents[messageKey];
                         }
                     } else {
                         // Hata durumunda mesaj göster ve geçici mesajı hata olarak işaretle
@@ -252,9 +276,21 @@
             return `${hours}:${minutes}`;
         }
         
-        function appendMessage(message, isTemporary) {
+        function appendMessage(message, isTemporary, skipIdCheck) {
+            // Eğer geçici mesaj değilse ve bu içerik zaten yakın zamanda gönderilmişse, gösterme
+            if (!isTemporary && message.senderId == currentUserId && sentMessageContents[message.content.trim()]) {
+                return;
+            }
+            
             var isFromCurrentUser = message.senderId == currentUserId;
             var messageId = isTemporary ? message.id : 'msg-' + message.id;
+            
+            // Eğer bu ID'li bir mesaj zaten varsa, gösterme (duplikasyon kontrolü)
+            // skipIdCheck parametresi true ise bu kontrolü atla (doğrudan AJAX yanıtı için)
+            if (!isTemporary && !skipIdCheck && $('#' + messageId).length > 0) {
+                return;
+            }
+            
             var messageTime = message.sentDate instanceof Date ? formatTime(message.sentDate) : message.sentDate.toString().substring(11, 16);
             var statusIcon = '';
             
@@ -316,7 +352,14 @@
                             var messageId = 'msg-' + message.id;
                             if (!processedMessageIds[message.id] && $('#' + messageId).length === 0) {
                                 processedMessageIds[message.id] = true;
-                                appendMessage(message);
+                                
+                                // Eğer bu kendi gönderdiğimiz bir mesajsa ve içerik son gönderdiğimiz mesaj ise ekleme
+                                if (message.senderId == currentUserId && sentMessageContents[message.content.trim()]) {
+                                    delete sentMessageContents[message.content.trim()]; // Artık takip etmeye gerek yok
+                                } else {
+                                    appendMessage(message);
+                                }
+                                
                                 // Son mesaj zamanını güncelle
                                 lastMessageDate = message.sentDate;
                             }

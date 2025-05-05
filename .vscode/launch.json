@@ -1,0 +1,92 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch Web App (http)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/SosyalMedya_Web/bin/Debug/net8.0/SosyalMedya_Web.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/SosyalMedya_Web",
+            "stopAtEntry": false,
+            "serverReadyAction": {
+                "action": "openExternally",
+                "pattern": "\\bNow listening on:\\s+(https?://\\S+)",
+                "uriFormat": "%s"
+            },
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development",
+                "ASPNETCORE_URLS": "http://localhost:5050"
+            },
+            "sourceFileMap": {
+                "/Views": "${workspaceFolder}/SosyalMedya_Web/Views"
+            }
+        },
+        {
+            "name": "Launch Web App (https)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/SosyalMedya_Web/bin/Debug/net8.0/SosyalMedya_Web.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/SosyalMedya_Web",
+            "stopAtEntry": false,
+            "serverReadyAction": {
+                "action": "openExternally",
+                "pattern": "\\bNow listening on:\\s+(https?://\\S+)",
+                "uriFormat": "%s"
+            },
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development",
+                "ASPNETCORE_URLS": "https://localhost:7168;http://localhost:5050"
+            },
+            "sourceFileMap": {
+                "/Views": "${workspaceFolder}/SosyalMedya_Web/Views"
+            }
+        },
+        {
+            "name": "Launch Web API",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/Web_Api/bin/Debug/net8.0/Web_Api.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/Web_Api",
+            "stopAtEntry": false,
+            "serverReadyAction": {
+                "action": "openExternally",
+                "pattern": "\\bNow listening on:\\s+(https?://\\S+)",
+                "uriFormat": "%s"
+            },
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            },
+            "sourceFileMap": {
+                "/Views": "${workspaceFolder}/Views"
+            }
+        },
+        {
+            "name": "IIS Express",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/SosyalMedya_Web/bin/Debug/net8.0/SosyalMedya_Web.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/SosyalMedya_Web",
+            "stopAtEntry": false,
+            "serverReadyAction": {
+                "action": "openExternally",
+                "pattern": "\\bNow listening on:\\s+(https?://\\S+)",
+                "uriFormat": "%s"
+            },
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development",
+                "ASPNETCORE_URLS": "http://localhost:53564"
+            },
+            "sourceFileMap": {
+                "/Views": "${workspaceFolder}/SosyalMedya_Web/Views"
+            }
+        }
+    ]
+}
