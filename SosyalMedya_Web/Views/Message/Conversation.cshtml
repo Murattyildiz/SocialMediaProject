@@ -13,6 +13,12 @@
 }
 
 <div class="container mt-4">
+    @if (ViewBag.ErrorMessage != null)
+    {
+        <div class="alert alert-danger">
+            <strong>Hata:</strong> @ViewBag.ErrorMessage
+        </div>
+    }
     <div class="row">
         <div class="col-md-12">
             <div class="card shadow">
@@ -20,21 +26,21 @@
                     <a href="/mesajlar" class="btn btn-light btn-sm me-3">
                         <i class="bi bi-arrow-left"></i>
                     </a>
-                    <img src="@otherUserImage" class="rounded-circle me-2" alt="@otherUserName" width="40" height="40">
+                    <img src="@otherUserImage" class="rounded-circle me-2" alt="@otherUserName" width="40" height="40" style="object-fit: cover;">
                     <h5 class="mb-0">@otherUserName</h5>
                 </div>
-                <div class="card-body" style="height: 400px; overflow-y: auto;" id="messageContainer">
+                <div class="card-body position-relative" style="height: 400px; overflow-y: auto; padding-bottom: 15px;" id="messageContainer">
                     @if (Model != null && Model.Any())
                     {
                         foreach (var message in Model)
                         {
                             bool isFromCurrentUser = message.SenderId == (int)currentUserId;
-                            <div class="d-flex @(isFromCurrentUser ? "justify-content-end" : "justify-content-start") mb-3">
+                            <div class="d-flex @(isFromCurrentUser ? "justify-content-end" : "justify-content-start") mb-3 message-item">
                                 @if (!isFromCurrentUser)
                                 {
-                                    <img src="@message.SenderImage" class="rounded-circle me-2 align-self-end" alt="" width="30" height="30">
+                                    <img src="@message.SenderImage" class="rounded-circle me-2 align-self-end" alt="" width="30" height="30" style="object-fit: cover;">
                                 }
-                                <div class="@(isFromCurrentUser ? "bg-primary text-white" : "bg-light") rounded p-3" style="max-width: 70%;">
+                                <div class="@(isFromCurrentUser ? "bg-primary text-white" : "bg-light") rounded p-3 message-bubble" style="max-width: 70%; word-wrap: break-word;">
                                     <p class="mb-0">@message.Content</p>
                                     <small class="@(isFromCurrentUser ? "text-white-50" : "text-muted") d-block text-end">
                                         @message.SentDate.ToString("HH:mm")
@@ -46,7 +52,7 @@
                                 </div>
                                 @if (isFromCurrentUser)
                                 {
-                                    <img src="@message.SenderImage" class="rounded-circle ms-2 align-self-end" alt="" width="30" height="30">
+                                    <img src="@message.SenderImage" class="rounded-circle ms-2 align-self-end" alt="" width="30" height="30" style="object-fit: cover;">
                                 }
                             </div>
                         }
@@ -61,32 +67,82 @@
                     }
                 </div>
                 <div class="card-footer bg-light">
-                    <form id="messageForm" class="d-flex">
+                    <div class="d-flex">
                         <input type="hidden" id="receiverId" value="@otherUserId">
-                        <input type="text" id="messageContent" class="form-control me-2" placeholder="Mesajınızı yazın...">
-                        <button type="submit" class="btn btn-primary">
+                        <input type="text" id="messageContent" class="form-control me-2" placeholder="Mesajınızı yazın..." autocomplete="off">
+                        <button type="button" id="sendButton" class="btn btn-primary">
                             <i class="bi bi-send"></i>
                         </button>
-                    </form>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
+<style>
+    .message-bubble {
+        border-radius: 1rem;
+        position: relative;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+    
+    .bg-primary.message-bubble {
+        border-bottom-right-radius: 0.2rem;
+    }
+    
+    .bg-light.message-bubble {
+        border-bottom-left-radius: 0.2rem;
+    }
+    
+    .message-item {
+        animation: fadeIn 0.3s ease-in-out;
+    }
+    
+    .sending-message {
+        opacity: 0.7;
+    }
+    
+    .error-message {
+        background-color: #dc3545 !important;
+    }
+    
+    @@keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+
 @section Scripts {
 <script>
     $(document).ready(function() {
         // Token'ı session'dan al
         var authToken = "@token";
+        var currentUserId = @currentUserId;
+        var currentUserName = "@ViewData["CurrentUserName"]";
+        var currentUserImage = "@ViewData["CurrentUserImage"]";
+        var otherUserName = "@otherUserName";
+        var otherUserImage = "@otherUserImage";
+        var messageContainer = document.getElementById('messageContainer');
+        var messageContent = document.getElementById('messageContent');
+        var sendButton = document.getElementById('sendButton');
+        var sendingInProgress = false;
+        var processedMessageIds = {};
+        var messageQueue = [];
+        var isProcessingQueue = false;
         
         // Sayfa yüklendiğinde mesajları aşağı kaydır
-        var messageContainer = document.getElementById('messageContainer');
-        messageContainer.scrollTop = messageContainer.scrollHeight;
+        scrollToBottom();
         
-        // Mesaj gönderme işlemi
-        $('#messageForm').submit(function(e) {
-            e.preventDefault();
+        function scrollToBottom() {
+            messageContainer.scrollTop = messageContainer.scrollHeight;
+        }
+        
+        // Mesaj gönderme fonksiyonu
+        function sendMessage() {
+            if (sendingInProgress) {
+                return;
+            }
             
             var content = $('#messageContent').val();
             var receiverId = parseInt($('#receiverId').val());
@@ -95,50 +151,149 @@
                 return;
             }
             
-            var message = {
-                receiverId: receiverId,
-                content: content
-            };
-
-            console.log("Gönderilecek mesaj:", message);
+            // Mesaj içeriğini temizle ve input'u devre dışı bırak
+            $('#messageContent').val('');
             
+            // Mesajı kuyruğa ekle ve işlemeyi başlat
+            messageQueue.push({
+                content: content,
+                receiverId: receiverId
+            });
+            
+            processMessageQueue();
+        }
+        
+        // Mesaj kuyruğunu işle - aynı anda sadece bir mesaj işlenir
+        function processMessageQueue() {
+            if (isProcessingQueue || messageQueue.length === 0) {
+                return;
+            }
+            
+            isProcessingQueue = true;
+            sendingInProgress = true;
+            
+            var currentMessage = messageQueue.shift();
+            $('#messageContent').prop('disabled', true);
+            
+            // Önce UI'da mesajı göster
+            var tempMessageId = 'temp-' + Date.now();
+            var tempMessage = {
+                id: tempMessageId,
+                content: currentMessage.content,
+                senderId: currentUserId,
+                senderName: currentUserName,
+                senderImage: currentUserImage,
+                receiverId: currentMessage.receiverId,
+                receiverName: otherUserName,
+                receiverImage: otherUserImage,
+                sentDate: new Date(),
+                isRead: false,
+                isSending: true
+            };
+            
+            appendMessage(tempMessage, true);
+            scrollToBottom();
+            
+            // AJAX isteği hazırla
             $.ajax({
                 url: '/Message/SendMessage',
                 type: 'POST',
                 contentType: 'application/json',
-                data: JSON.stringify(message),
+                data: JSON.stringify(currentMessage),
                 beforeSend: function(xhr) {
-                    $('#messageContent').prop('disabled', true);
-                    // Token eklenebilir
                     if (authToken) {
                         xhr.setRequestHeader('Authorization', 'Bearer ' + authToken);
                     }
                 },
                 success: function(response) {
-                    console.log("Başarılı yanıt:", response);
                     if (response.success) {
-                        $('#messageContent').val('');
-                        // Mesaj gönderildikten sonra sayfayı yenile
-                        location.reload();
+                        if (response.isDuplicate) {
+                            // Duplikasyon kontrol edildi, geçici mesajı normal göster
+                            $('#' + tempMessageId + ' .message-bubble').removeClass('sending-message');
+                        } else {
+                            // Geçici mesajı kaldır ve gerçek mesajı ekle
+                            $('#' + tempMessageId).remove();
+                            appendMessage(response.messageData);
+                            scrollToBottom();
+                            
+                            // Son mesaj zamanını güncelle
+                            if (response.messageData && response.messageData.sentDate) {
+                                lastMessageDate = response.messageData.sentDate;
+                            }
+                        }
                     } else {
-                        alert(response.message || 'Mesaj gönderilemedi.');
+                        // Hata durumunda mesaj göster ve geçici mesajı hata olarak işaretle
+                        $('#' + tempMessageId + ' .message-bubble').addClass('error-message')
+                            .append('<small class="text-danger d-block mt-1">Gönderilemedi: ' + response.message + '</small>');
                     }
                 },
                 error: function(xhr, status, error) {
-                    console.error("AJAX hatası:", status, error);
-                    console.log("Sunucu yanıtı:", xhr.responseText);
-                    alert('Mesaj gönderirken bir hata oluştu: ' + error);
+                    // AJAX hatası durumunda
+                    $('#' + tempMessageId + ' .message-bubble').addClass('error-message')
+                        .append('<small class="text-danger d-block mt-1">Gönderilemedi (Bağlantı Hatası)</small>');
                 },
                 complete: function() {
-                    $('#messageContent').prop('disabled', false);
-                    $('#messageContent').focus();
+                    // İşlem tamamlandığında input'u etkinleştir ve işlem bayraklarını sıfırla
+                    $('#messageContent').prop('disabled', false).focus();
+                    sendingInProgress = false;
+                    isProcessingQueue = false;
+                    
+                    // Kuyrukta başka mesaj varsa işlemeye devam et
+                    if (messageQueue.length > 0) {
+                        setTimeout(processMessageQueue, 300); // Küçük bir gecikme ekle
+                    }
                 }
             });
-        });
+        }
+        
+        function formatTime(date) {
+            const hours = date.getHours().toString().padStart(2, '0');
+            const minutes = date.getMinutes().toString().padStart(2, '0');
+            return `${hours}:${minutes}`;
+        }
+        
+        function appendMessage(message, isTemporary) {
+            var isFromCurrentUser = message.senderId == currentUserId;
+            var messageId = isTemporary ? message.id : 'msg-' + message.id;
+            var messageTime = message.sentDate instanceof Date ? formatTime(message.sentDate) : message.sentDate.toString().substring(11, 16);
+            var statusIcon = '';
+            
+            if (isFromCurrentUser) {
+                if (message.isSending) {
+                    statusIcon = '<i class="bi bi-clock"></i>'; // Gönderiliyor
+                } else if (message.isRead) {
+                    statusIcon = '<i class="bi bi-check-all"></i>'; // Okundu
+                } else {
+                    statusIcon = '<i class="bi bi-check"></i>'; // İletildi ama okunmadı
+                }
+            }
+            
+            var messageHtml = `
+                <div id="${messageId}" class="d-flex ${isFromCurrentUser ? 'justify-content-end' : 'justify-content-start'} mb-3 message-item">
+                    ${!isFromCurrentUser ? `<img src="${message.senderImage}" class="rounded-circle me-2 align-self-end" alt="" width="30" height="30" style="object-fit: cover;">` : ''}
+                    <div class="${isFromCurrentUser ? 'bg-primary text-white' : 'bg-light'} rounded p-3 message-bubble ${message.isSending ? 'sending-message' : ''}" style="max-width: 70%; word-wrap: break-word;">
+                        <p class="mb-0">${message.content}</p>
+                        <small class="${isFromCurrentUser ? 'text-white-50' : 'text-muted'} d-block text-end">
+                            ${messageTime}
+                            ${statusIcon}
+                        </small>
+                    </div>
+                    ${isFromCurrentUser ? `<img src="${message.senderImage}" class="rounded-circle ms-2 align-self-end" alt="" width="30" height="30" style="object-fit: cover;">` : ''}
+                </div>
+            `;
+            
+            $('#messageContainer').append(messageHtml);
+        }
+        
+        // Son mesaj zamanını tutan değişken
+        var lastMessageDate = '@(Model != null && Model.Any() ? Model.Last().SentDate.ToString("yyyy-MM-ddTHH:mm:ss") : DateTime.MinValue.ToString("yyyy-MM-ddTHH:mm:ss"))';
         
         // Periyodik olarak mesajları kontrol et
         function checkNewMessages() {
-            var lastMessageDate = '@(Model != null && Model.Any() ? Model.Last().SentDate.ToString("yyyy-MM-ddTHH:mm:ss") : DateTime.MinValue.ToString("yyyy-MM-ddTHH:mm:ss"))';
+            if (sendingInProgress) {
+                return; // Mesaj gönderimi sırasında yeni mesaj kontrolü yapma
+            }
+            
             var receiverId = $('#receiverId').val();
             
             $.ajax({
@@ -148,16 +303,56 @@
                     otherUserId: receiverId,
                     lastMessageDate: lastMessageDate
                 },
-                success: function(response) {
-                    if (response.success && response.hasNewMessages) {
-                        location.reload();
+                beforeSend: function(xhr) {
+                    if (authToken) {
+                        xhr.setRequestHeader('Authorization', 'Bearer ' + authToken);
                     }
+                },
+                success: function(response) {
+                    if (response.success && response.messages && response.messages.length > 0) {
+                        // Yeni mesajları ekle
+                        response.messages.forEach(function(message) {
+                            // Client-side duplikasyon kontrolü
+                            var messageId = 'msg-' + message.id;
+                            if (!processedMessageIds[message.id] && $('#' + messageId).length === 0) {
+                                processedMessageIds[message.id] = true;
+                                appendMessage(message);
+                                // Son mesaj zamanını güncelle
+                                lastMessageDate = message.sentDate;
+                            }
+                        });
+                        scrollToBottom();
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error("Yeni mesaj kontrolü sırasında hata:", status, error);
                 }
             });
         }
         
-        // 5 saniyede bir yeni mesajları kontrol et
-        setInterval(checkNewMessages, 5000);
+        // 3 saniyede bir yeni mesajları kontrol et
+        setInterval(checkNewMessages, 3000);
+        
+        // Mesaj gönderme olayları
+        
+        // Enter tuşuna basma
+        $('#messageContent').keydown(function(e) {
+            if (e.keyCode === 13) { // Enter tuşu
+                e.preventDefault(); // Tarayıcının varsayılan davranışını engelle
+                sendMessage();
+            }
+        });
+        
+        // Gönder butonuna tıklama
+        $('#sendButton').click(function() {
+            sendMessage();
+        });
+        
+        // Sayfadaki tüm form submit olaylarını engelle (daha fazla önlem için)
+        $(document).on('submit', 'form', function(e) {
+            e.preventDefault();
+            return false;
+        });
     });
 </script>
 } 

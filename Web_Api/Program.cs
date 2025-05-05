@@ -89,7 +89,12 @@ if (app.Environment.IsDevelopment())
 
 app.ConfigureCustomExceptionMiddleware();
 
-app.UseCors(builder => builder.WithOrigins("https://localhost:5190/").AllowAnyHeader());
+// Fix the CORS policy to allow requests from the client application
+app.UseCors(builder => 
+    builder.WithOrigins("https://localhost:7168", "http://localhost:5050")
+           .AllowAnyMethod()
+           .AllowAnyHeader()
+           .AllowCredentials());
 
 app.UseHttpsRedirection();
 app.UseRouting();
