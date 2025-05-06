@@ -321,13 +321,12 @@
             $('#messageContainer').append(messageHtml);
         }
         
-        // Son mesaj zamanını tutan değişken
+      
         var lastMessageDate = '@(Model != null && Model.Any() ? Model.Last().SentDate.ToString("yyyy-MM-ddTHH:mm:ss") : DateTime.MinValue.ToString("yyyy-MM-ddTHH:mm:ss"))';
         
-        // Periyodik olarak mesajları kontrol et
         function checkNewMessages() {
             if (sendingInProgress) {
-                return; // Mesaj gönderimi sırasında yeni mesaj kontrolü yapma
+                return; 
             }
             
             var receiverId = $('#receiverId').val();

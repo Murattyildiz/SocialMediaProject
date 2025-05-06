@@ -31,15 +31,15 @@ namespace SosyalMedya_Web.Controllers
 
                 if (apiDataResponse.Success && apiDataResponse.Data != null)
                 {
-                    // Paylaşımları en yeni tarihten eskiye doğru sırala
+               
                     var sortedArticles = apiDataResponse.Data
                         .OrderByDescending(a => {
-                            // Esnek bir şekilde tarihi parse etmeye çalış
+                         
                             if (DateTime.TryParse(a.SharingDate, CultureInfo.GetCultureInfo("tr-TR"), DateTimeStyles.None, out DateTime parsedDate))
                             {
                                 return parsedDate;
                             }
-                            // Parse edilemezse varsayılan değer döndür
+                       
                             return DateTime.MinValue;
                         })
                         .ToList();
