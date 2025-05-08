@@ -9,6 +9,11 @@ namespace SosyalMedya_Web.Controllers
     {
         private readonly IHttpClientFactory _httpClientFactory;
 
+        // Default constructor for controllers that don't inject IHttpClientFactory
+        public BaseController()
+        {
+        }
+
         public BaseController(IHttpClientFactory httpClientFactory)
         {
             _httpClientFactory = httpClientFactory;
@@ -31,6 +36,19 @@ namespace SosyalMedya_Web.Controllers
             await next();
         }
 
+        // Helper method to get the JWT token from the session
+        protected string GetToken()
+        {
+            return HttpContext.Session.GetString("Token");
+        }
+
+        // Helper method to get the current user's ID
+        protected int GetCurrentUserId()
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            return userId.HasValue ? userId.Value : 0;
+        }
+
         protected async Task SetUserViewData(int userId)
         {
             try
@@ -50,13 +68,13 @@ namespace SosyalMedya_Web.Controllers
                         // Orijinal anahtarlar
                         ViewData["UserName"] = $"{userApiResponse.Data.FirstName} {userApiResponse.Data.LastName}";
                         ViewData["UserImage"] = string.IsNullOrEmpty(userApiResponse.Data.ImagePath)
-                            ? "https://localhost:5190/images/default.jpg"
+                            ? "/frontend/assets/images/testLogo.jpg"
                             : $"https://localhost:5190/{userApiResponse.Data.ImagePath}";
 
                         // Yeni anahtarlar
                         ViewData["CurrentUserName"] = $"{userApiResponse.Data.FirstName} {userApiResponse.Data.LastName}";
                         ViewData["CurrentUserImage"] = string.IsNullOrEmpty(userApiResponse.Data.ImagePath)
-                            ? "https://localhost:5190/images/default.jpg"
+                            ? "/frontend/assets/images/testLogo.jpg"
                             : $"https://localhost:5190/{userApiResponse.Data.ImagePath}";
 
                         // Get article count
@@ -84,11 +102,11 @@ namespace SosyalMedya_Web.Controllers
             {
                 // Set default values if error occurs
                 ViewData["UserName"] = "Kullanıcı";
-                ViewData["UserImage"] = "https://localhost:5190/images/default.jpg";
+                ViewData["UserImage"] = "/frontend/assets/images/testLogo.jpg";
                 ViewData["MyArticle"] = 0;
 
                 ViewData["CurrentUserName"] = "Kullanıcı";
-                ViewData["CurrentUserImage"] = "https://localhost:5190/images/default.jpg";
+                ViewData["CurrentUserImage"] = "/frontend/assets/images/testLogo.jpg";
                 ViewData["CurrentUserArticleCount"] = 0;
 
                 // Log the error

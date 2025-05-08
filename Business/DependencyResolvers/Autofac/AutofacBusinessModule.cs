@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -58,6 +59,21 @@ namespace Business.DependencyResolvers.Autofac
             builder.RegisterType<MessageManager>().As<IMessageService>().SingleInstance();
             builder.RegisterType<EfMessageDal>().As<IMessageDal>().SingleInstance();
 
+            // Code Share and Comment services
+            builder.RegisterType<CodeShareManager>().As<ICodeShareService>().SingleInstance();
+            builder.RegisterType<EfCodeShareDal>().As<ICodeShareDal>().SingleInstance();
+            
+            builder.RegisterType<CodeCommentManager>().As<ICodeCommentService>().SingleInstance();
+            builder.RegisterType<EfCodeCommentDal>().As<ICodeCommentDal>().SingleInstance();
+
+            // Register HttpClientFactory for AI features
+            builder.Register(c => new HttpClient()).As<HttpClient>().SingleInstance();
+            builder.Register(c => 
+            {
+                var httpClientFactory = new Func<HttpClient>(() => c.Resolve<HttpClient>());
+                return new HttpClientFactory(httpClientFactory);
+            }).As<IHttpClientFactory>().SingleInstance();
+
             var assembly = System.Reflection.Assembly.GetExecutingAssembly();
 
             builder.RegisterAssemblyTypes(assembly).AsImplementedInterfaces()
@@ -67,6 +83,22 @@ namespace Business.DependencyResolvers.Autofac
                 }).SingleInstance();
 
             //builder.RegisterBuildCallback(cr => Console.WriteLine("Container built!"));
+        }
+    }
+
+    // Simple HttpClientFactory implementation
+    public class HttpClientFactory : IHttpClientFactory
+    {
+        private readonly Func<HttpClient> _httpClientFactory;
+
+        public HttpClientFactory(Func<HttpClient> httpClientFactory)
+        {
+            _httpClientFactory = httpClientFactory;
+        }
+
+        public HttpClient CreateClient(string name)
+        {
+            return _httpClientFactory();
         }
     }
 }

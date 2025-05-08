@@ -28,5 +28,8 @@ namespace DataAccess.Concrete.Context
 
         public virtual DbSet<UserFollow> UserFollows { get; set; }
         public virtual DbSet<Message> Messages { get; set; }
+        public virtual DbSet<CodeComment> CodeComments { get; set; }
+
+        public virtual DbSet<CodeShare> CodeShares { get; set; }
     }
 }

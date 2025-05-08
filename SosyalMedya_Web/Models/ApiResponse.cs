@@ -4,15 +4,16 @@ namespace SosyalMedya_Web.Models
     {
         public bool Success { get; set; }
         public string Message { get; set; }
+        public object Data { get; set; }
     }
 
     public class ApiDataResponse<T> : ApiResponse
     {
-        public T Data { get; set; }
+        public new T Data { get; set; }
     }
 
     public class ApiListDataResponse<T> : ApiResponse
     {
-        public List<T> Data { get; set; }
+        public new List<T> Data { get; set; }
     }
 } 

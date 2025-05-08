@@ -81,6 +81,22 @@ namespace Business.Constants
         internal static string UserClaimAdded;
         internal static string UserClaimDelete;
         internal static string UsersClaimsListed;
+
+        // Code Share Messages
+        public static string CodeShareAdded = "Kod paylaşımı yapıldı";
+        public static string CodeShareUpdated = "Kod paylaşımı güncellendi";
+        public static string CodeShareDeleted = "Kod paylaşımı silindi";
+        public static string CodeSharesListed = "Kod paylaşımları listelendi";
+        public static string CodeShareListed = "Kod paylaşımı listelendi";
+        public static string CodeShareNotFound = "Kod paylaşımı bulunamadı";
+        
+        // Code Comment Messages
+        public static string CodeCommentAdded = "Kod yorumu yapıldı";
+        public static string CodeCommentUpdated = "Kod yorumu güncellendi";
+        public static string CodeCommentDeleted = "Kod yorumu silindi";
+        public static string CodeCommentsListed = "Kod yorumları listelendi";
+        public static string CodeCommentListed = "Kod yorumu listelendi";
+        public static string CodeCommentNotFound = "Kod yorumu bulunamadı";
     }
 }
     

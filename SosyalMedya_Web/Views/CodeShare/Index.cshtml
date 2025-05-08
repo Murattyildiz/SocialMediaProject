@@ -1,0 +1,102 @@
+@model List<CodeShareViewModel>
+@{
+    ViewData["Title"] = "Kod Paylaşımları";
+    Layout = "~/Views/Shared/_HomeLayout.cshtml";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-12 mb-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">Kod Paylaşımları</h4>
+                    <a href="@Url.Action("Create", "CodeShare")" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> Yeni Kod Paylaş
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        @if (Model != null && Model.Any())
+        {
+            <div class="col-md-12">
+                <div class="row">
+                    @foreach (var codeShare in Model)
+                    {
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">@codeShare.Title</h5>
+                                    <span class="badge bg-primary">@codeShare.Language</span>
+                                </div>
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center mb-3">
+                                        @if (string.IsNullOrEmpty(codeShare.UserImage))
+                                        {
+                                            <img src="~/frontend/assets/images/testLogo.jpg" class="rounded-circle me-2" width="40" height="40" alt="Profile Picture" />
+                                        }
+                                        else
+                                        {
+                                            <img src="@codeShare.UserImage" class="rounded-circle me-2" width="40" height="40" alt="Profile Picture" />
+                                        }
+                                        <div>
+                                            <h6 class="mb-0">@codeShare.UserName</h6>
+                                            <small class="text-muted">@string.Format("{0:dd.MM.yyyy HH:mm}", codeShare.SharingDate)</small>
+                                        </div>
+                                    </div>
+                                    
+                                    <p class="mb-3">@codeShare.Description</p>
+                                    
+                                    <div class="code-preview mb-3 p-2 bg-light rounded">
+                                        <pre class="mb-0"><code class="language-@codeShare.Language.ToLower()">@(codeShare.CodeContent.Length > 150 ? codeShare.CodeContent.Substring(0, 150) + "..." : codeShare.CodeContent)</code></pre>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        @if (!string.IsNullOrEmpty(codeShare.Tags))
+                                        {
+                                            @foreach (var tag in codeShare.Tags.Split(','))
+                                            {
+                                                <span class="badge bg-secondary me-1">@tag.Trim()</span>
+                                            }
+                                        }
+                                    </div>
+                                    
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <span class="me-3"><i class="bi bi-eye"></i> @codeShare.ViewCount</span>
+                                            <span class="me-3"><i class="bi bi-download"></i> @codeShare.DownloadCount</span>
+                                            <span><i class="bi bi-chat-dots"></i> @(codeShare.Comments?.Count ?? 0)</span>
+                                        </div>
+                                        <a href="@Url.Action("Detail", "CodeShare", new { id = codeShare.Id })" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-info-circle"></i> Detaylar
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="col-md-12">
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i> Henüz kod paylaşımı bulunmamaktadır.
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/default.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            document.querySelectorAll('pre code').forEach((el) => {
+                hljs.highlightElement(el);
+            });
+        });
+    </script>
+} 

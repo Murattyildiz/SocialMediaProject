@@ -30,7 +30,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
         ValidIssuer = tokenOptions.Issuer,
         ValidAudience = tokenOptions.Audience,
         ValidateIssuerSigningKey = true,
-        IssuerSigningKey = SecurityKeyHelper.CreateSecurityKey(tokenOptions.Issuer),
+        IssuerSigningKey = SecurityKeyHelper.CreateSecurityKey(tokenOptions.SecurityKey),
     };
 });
 
@@ -40,9 +40,10 @@ builder.Services.AddDependencyResolvers(new ICoreModule[]
 });
 
 // Add services to the container.
-
 builder.Services.AddControllers();
 builder.Services.AddCors();
+builder.Services.AddHttpClient(); // Add HttpClient for AI features
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(swagger =>
@@ -75,9 +76,6 @@ builder.Services.AddSwaggerGen(swagger =>
     });
 });
 
-// IUserFollowService'i dependency injection container'a ekle
-builder.Services.AddScoped<IUserFollowService, UserFollowManager>();
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -91,7 +89,7 @@ app.ConfigureCustomExceptionMiddleware();
 
 // Fix the CORS policy to allow requests from the client application
 app.UseCors(builder => 
-    builder.WithOrigins("https://localhost:7168", "http://localhost:5050")
+    builder.WithOrigins("https://localhost:7168", "http://localhost:5050", "https://localhost:5190", "http://localhost:5191")
            .AllowAnyMethod()
            .AllowAnyHeader()
            .AllowCredentials());
@@ -99,7 +97,6 @@ app.UseCors(builder =>
 app.UseHttpsRedirection();
 app.UseRouting();
 app.UseAuthentication();
-
 app.UseAuthorization();
 app.UseStaticFiles();
 app.MapControllers();

@@ -10,10 +10,14 @@ namespace SosyalMedya_Web.Controllers
     public class ArticleController : Controller
     {
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IConfiguration _configuration;
+        private readonly string _apiUrl;
 
-        public ArticleController(IHttpClientFactory httpClientFactory)
+        public ArticleController(IHttpClientFactory httpClientFactory, IConfiguration configuration)
         {
             _httpClientFactory = httpClientFactory;
+            _configuration = configuration;
+            _apiUrl = _configuration["ApiUrl"] ?? "https://localhost:5190"; // Default API URL
         }
         [Authorize(Roles = "admin,user")]
         [HttpPost("share-content")]
@@ -24,7 +28,7 @@ namespace SosyalMedya_Web.Controllers
             var content = new StringContent(jsonArticle, Encoding.UTF8, "application/json");
             var token = HttpContext.Session.GetString("Token");
             httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            var responseMessage = await httpClient.PostAsync("https://localhost:5190/api/Articles/add", content);
+            var responseMessage = await httpClient.PostAsync($"{_apiUrl}/api/Articles/add", content);
             if (responseMessage.IsSuccessStatusCode)
             {
                 var sharedResponse = await GetSharedResponse(responseMessage);
@@ -40,11 +44,9 @@ namespace SosyalMedya_Web.Controllers
         public async Task<IActionResult> DeleteArticle(int id)
         {
             var httpClient = _httpClientFactory.CreateClient();
-            //var jsonArticle = JsonConvert.SerializeObject(article);
-            //var content = new StringContent(jsonArticle, Encoding.UTF8, "application/json");
             var token = HttpContext.Session.GetString("Token");
             httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            var responseMessage = await httpClient. DeleteAsync("https://localhost:5190/api/Articles/delete?id="+id);
+            var responseMessage = await httpClient.DeleteAsync($"{_apiUrl}/api/Articles/delete?id={id}");
             if (responseMessage.IsSuccessStatusCode)
             {
                 var sharedResponse = await GetSharedResponse(responseMessage);
@@ -64,7 +66,7 @@ namespace SosyalMedya_Web.Controllers
             var content = new StringContent(jsonArticle, Encoding.UTF8, "application/json");
             var token = HttpContext.Session.GetString("Token");
             httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            var responseMessage = await httpClient.PostAsync("https://localhost:5190/api/Articles/update", content);
+            var responseMessage = await httpClient.PostAsync($"{_apiUrl}/api/Articles/update", content);
             if (responseMessage.IsSuccessStatusCode)
             {
                 var sharedResponse = await GetSharedResponse(responseMessage);
@@ -81,13 +83,13 @@ namespace SosyalMedya_Web.Controllers
         public async Task<IActionResult> GetUpdateArticle(int id)
         {
             var httpClient = _httpClientFactory.CreateClient();
-            var responseMessage = await httpClient.GetAsync("https://localhost:5190/api/Articles/getbyid?id=" + id);
+            var responseMessage = await httpClient.GetAsync($"{_apiUrl}/api/Articles/getbyid?id={id}");
             if (responseMessage.IsSuccessStatusCode)
             {
                 var responseContent = await responseMessage.Content.ReadAsStringAsync();
                 var data = JsonConvert.DeserializeObject<ApiDataResponse<Article>>(responseContent);
 
-                var responseMessage1 = await httpClient.GetAsync("https://localhost:5190/api/Topics/getall");
+                var responseMessage1 = await httpClient.GetAsync($"{_apiUrl}/api/Topics/getall");
                 if (responseMessage1.IsSuccessStatusCode)
                 {
                     var jsonResponse1 = await responseMessage1.Content.ReadAsStringAsync();

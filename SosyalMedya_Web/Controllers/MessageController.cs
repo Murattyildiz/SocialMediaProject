@@ -6,20 +6,25 @@ using SosyalMedya_Web.Models;
 using System.Net.Http.Headers;
 using System.Net.Http;
 using System.Collections.Concurrent;
+using Microsoft.Extensions.Configuration;
 
 namespace SosyalMedya_Web.Controllers
 {
     public class MessageController : Controller
     {
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IConfiguration _configuration;
+        private readonly string _apiUrl;
         // Mesaj tekrarını engellemek için statik önbellek
         private static readonly ConcurrentDictionary<string, DateTime> _recentMessages = new ConcurrentDictionary<string, DateTime>();
         // Mesaj tekrarı için zaman aşımı (saniye cinsinden)
         private const int DuplicatePreventionTimeoutSeconds = 5;
 
-        public MessageController(IHttpClientFactory httpClientFactory)
+        public MessageController(IHttpClientFactory httpClientFactory, IConfiguration configuration)
         {
             _httpClientFactory = httpClientFactory;
+            _configuration = configuration;
+            _apiUrl = _configuration["ApiUrl"] ?? "https://localhost:5190"; // Default API URL
         }
 
         // Belirli bir süre zarfında aynı mesajın gönderilmesini engelleyen yardımcı metod
@@ -71,7 +76,7 @@ namespace SosyalMedya_Web.Controllers
             try
             {
                 // Son mesajları olan kullanıcıların listesini getir
-                var userListResponse = await httpClient.GetAsync("https://localhost:5190/api/Users/getall");
+                var userListResponse = await httpClient.GetAsync($"{_apiUrl}/api/Users/getall");
                 
                 if (!userListResponse.IsSuccessStatusCode)
                 {
@@ -102,7 +107,7 @@ namespace SosyalMedya_Web.Controllers
                 // Her kullanıcı için son mesaj bilgilerini getir
                 foreach (var user in userList)
                 {
-                    var messagesResponse = await httpClient.GetAsync($"https://localhost:5190/api/Messages/getconversation?user1Id={currentUserId}&user2Id={user.UserId}");
+                    var messagesResponse = await httpClient.GetAsync($"{_apiUrl}/api/Messages/getconversation?user1Id={currentUserId}&user2Id={user.UserId}");
                     
                     if (messagesResponse.IsSuccessStatusCode)
                     {
@@ -153,7 +158,7 @@ namespace SosyalMedya_Web.Controllers
                 var token = HttpContext.Session.GetString("Token");
                 httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-                var otherUserResponse = await httpClient.GetAsync($"https://localhost:5190/api/Users/getbyid?id={userId}");
+                var otherUserResponse = await httpClient.GetAsync($"{_apiUrl}/api/Users/getbyid?id={userId}");
                 if (!otherUserResponse.IsSuccessStatusCode)
                 {
                     return NotFound();
@@ -171,14 +176,14 @@ namespace SosyalMedya_Web.Controllers
                 ViewData["OtherUserId"] = otherUser.Id;
                 ViewData["OtherUserName"] = $"{otherUser.FirstName} {otherUser.LastName}";
                 ViewData["OtherUserImage"] = string.IsNullOrEmpty(otherUser.ImagePath) 
-                    ? "https://localhost:5190/images/default.jpg" 
-                    : $"https://localhost:5190/{otherUser.ImagePath}";
+                    ? $"{_apiUrl}/images/default.jpg" 
+                    : $"{_apiUrl}/{otherUser.ImagePath}";
                 
                 ViewData["CurrentUserId"] = currentUserId;
                 ViewData["Token"] = token;
 
                 // Mesajları getir
-                var messagesResponse = await httpClient.GetAsync($"https://localhost:5190/api/Messages/getconversation?user1Id={currentUserId}&user2Id={userId}");
+                var messagesResponse = await httpClient.GetAsync($"{_apiUrl}/api/Messages/getconversation?user1Id={currentUserId}&user2Id={userId}");
                 
                 List<MessageDto> messages = new List<MessageDto>();
                 
@@ -190,9 +195,9 @@ namespace SosyalMedya_Web.Controllers
                     if (messagesApiResponse.Success && messagesApiResponse.Data != null)
                     {
                         // CurrentUser bilgilerini getir
-                        var currentUserResponse = await httpClient.GetAsync($"https://localhost:5190/api/Users/getbyid?id={currentUserId}");
+                        var currentUserResponse = await httpClient.GetAsync($"{_apiUrl}/api/Users/getbyid?id={currentUserId}");
                         string currentUserName = "";
-                        string currentUserImage = "https://localhost:5190/images/default.jpg";
+                        string currentUserImage = $"{_apiUrl}/images/default.jpg";
                         
                         if (currentUserResponse.IsSuccessStatusCode)
                         {
@@ -203,8 +208,8 @@ namespace SosyalMedya_Web.Controllers
                             {
                                 currentUserName = $"{currentUserApiResponse.Data.FirstName} {currentUserApiResponse.Data.LastName}";
                                 currentUserImage = string.IsNullOrEmpty(currentUserApiResponse.Data.ImagePath) 
-                                    ? "https://localhost:5190/images/default.jpg" 
-                                    : $"https://localhost:5190/{currentUserApiResponse.Data.ImagePath}";
+                                    ? $"{_apiUrl}/images/default.jpg" 
+                                    : $"{_apiUrl}/{currentUserApiResponse.Data.ImagePath}";
                                 
                                 ViewData["CurrentUserName"] = currentUserName;
                                 ViewData["CurrentUserImage"] = currentUserImage;
@@ -214,7 +219,7 @@ namespace SosyalMedya_Web.Controllers
                         // Okunmamış mesajları okundu olarak işaretle
                         foreach (var message in messagesApiResponse.Data.Where(m => !m.IsRead && m.ReceiverId == currentUserId))
                         {
-                            await httpClient.PostAsync($"https://localhost:5190/api/Messages/markasread?messageId={message.Id}", null);
+                            await httpClient.PostAsync($"{_apiUrl}/api/Messages/markasread?messageId={message.Id}", null);
                         }
 
                         messages = messagesApiResponse.Data.Select(m => new MessageDto
@@ -276,7 +281,7 @@ namespace SosyalMedya_Web.Controllers
             
             try
             {
-                var response = await httpClient.PostAsync("https://localhost:5190/api/Messages/add", content);
+                var response = await httpClient.PostAsync($"{_apiUrl}/api/Messages/add", content);
                 
                 var responseContent = await response.Content.ReadAsStringAsync();
                 
@@ -290,9 +295,9 @@ namespace SosyalMedya_Web.Controllers
                     }
                     
                     // CurrentUser bilgilerini getir
-                    var currentUserResponse = await httpClient.GetAsync($"https://localhost:5190/api/Users/getbyid?id={currentUserId}");
+                    var currentUserResponse = await httpClient.GetAsync($"{_apiUrl}/api/Users/getbyid?id={currentUserId}");
                     string currentUserName = "";
-                    string currentUserImage = "https://localhost:5190/images/default.jpg";
+                    string currentUserImage = $"{_apiUrl}/images/default.jpg";
                     
                     if (currentUserResponse.IsSuccessStatusCode)
                     {
@@ -303,15 +308,15 @@ namespace SosyalMedya_Web.Controllers
                         {
                             currentUserName = $"{currentUserApiResponse.Data.FirstName} {currentUserApiResponse.Data.LastName}";
                             currentUserImage = string.IsNullOrEmpty(currentUserApiResponse.Data.ImagePath) 
-                                ? "https://localhost:5190/images/default.jpg" 
-                                : $"https://localhost:5190/{currentUserApiResponse.Data.ImagePath}";
+                                ? $"{_apiUrl}/images/default.jpg" 
+                                : $"{_apiUrl}/{currentUserApiResponse.Data.ImagePath}";
                         }
                     }
                     
                     // Diğer kullanıcının bilgilerini getir
-                    var otherUserResponse = await httpClient.GetAsync($"https://localhost:5190/api/Users/getbyid?id={messageVM.ReceiverId}");
+                    var otherUserResponse = await httpClient.GetAsync($"{_apiUrl}/api/Users/getbyid?id={messageVM.ReceiverId}");
                     string otherUserName = "";
-                    string otherUserImage = "https://localhost:5190/images/default.jpg";
+                    string otherUserImage = $"{_apiUrl}/images/default.jpg";
                     
                     if (otherUserResponse.IsSuccessStatusCode)
                     {
@@ -322,8 +327,8 @@ namespace SosyalMedya_Web.Controllers
                         {
                             otherUserName = $"{otherUserApiResponse.Data.FirstName} {otherUserApiResponse.Data.LastName}";
                             otherUserImage = string.IsNullOrEmpty(otherUserApiResponse.Data.ImagePath) 
-                                ? "https://localhost:5190/images/default.jpg" 
-                                : $"https://localhost:5190/{otherUserApiResponse.Data.ImagePath}";
+                                ? $"{_apiUrl}/images/default.jpg" 
+                                : $"{_apiUrl}/{otherUserApiResponse.Data.ImagePath}";
                         }
                     }
                     
@@ -374,7 +379,7 @@ namespace SosyalMedya_Web.Controllers
             
             try
             {
-                var messagesResponse = await httpClient.GetAsync($"https://localhost:5190/api/Messages/getconversation?user1Id={currentUserId}&user2Id={otherUserId}");
+                var messagesResponse = await httpClient.GetAsync($"{_apiUrl}/api/Messages/getconversation?user1Id={currentUserId}&user2Id={otherUserId}");
                 
                 if (messagesResponse.IsSuccessStatusCode)
                 {
@@ -393,14 +398,14 @@ namespace SosyalMedya_Web.Controllers
                             // Okunmamış mesajları okundu olarak işaretle
                             foreach (var message in newMessages.Where(m => !m.IsRead && m.ReceiverId == currentUserId))
                             {
-                                await httpClient.PostAsync($"https://localhost:5190/api/Messages/markasread?messageId={message.Id}", null);
+                                await httpClient.PostAsync($"{_apiUrl}/api/Messages/markasread?messageId={message.Id}", null);
                             }
                             
                             // Kullanıcı bilgilerini getir
                             string otherUserName = "";
-                            string otherUserImage = "https://localhost:5190/images/default.jpg";
+                            string otherUserImage = $"{_apiUrl}/images/default.jpg";
                             
-                            var otherUserResponse = await httpClient.GetAsync($"https://localhost:5190/api/Users/getbyid?id={otherUserId}");
+                            var otherUserResponse = await httpClient.GetAsync($"{_apiUrl}/api/Users/getbyid?id={otherUserId}");
                             if (otherUserResponse.IsSuccessStatusCode)
                             {
                                 var otherUserJson = await otherUserResponse.Content.ReadAsStringAsync();
@@ -410,15 +415,15 @@ namespace SosyalMedya_Web.Controllers
                                 {
                                     otherUserName = $"{otherUserApiResponse.Data.FirstName} {otherUserApiResponse.Data.LastName}";
                                     otherUserImage = string.IsNullOrEmpty(otherUserApiResponse.Data.ImagePath) 
-                                        ? "https://localhost:5190/images/default.jpg" 
-                                        : $"https://localhost:5190/{otherUserApiResponse.Data.ImagePath}";
+                                        ? $"{_apiUrl}/images/default.jpg" 
+                                        : $"{_apiUrl}/{otherUserApiResponse.Data.ImagePath}";
                                 }
                             }
                             
                             string currentUserName = "";
-                            string currentUserImage = "https://localhost:5190/images/default.jpg";
+                            string currentUserImage = $"{_apiUrl}/images/default.jpg";
                             
-                            var currentUserResponse = await httpClient.GetAsync($"https://localhost:5190/api/Users/getbyid?id={currentUserId}");
+                            var currentUserResponse = await httpClient.GetAsync($"{_apiUrl}/api/Users/getbyid?id={currentUserId}");
                             if (currentUserResponse.IsSuccessStatusCode)
                             {
                                 var currentUserJson = await currentUserResponse.Content.ReadAsStringAsync();
@@ -428,8 +433,8 @@ namespace SosyalMedya_Web.Controllers
                                 {
                                     currentUserName = $"{currentUserApiResponse.Data.FirstName} {currentUserApiResponse.Data.LastName}";
                                     currentUserImage = string.IsNullOrEmpty(currentUserApiResponse.Data.ImagePath) 
-                                        ? "https://localhost:5190/images/default.jpg" 
-                                        : $"https://localhost:5190/{currentUserApiResponse.Data.ImagePath}";
+                                        ? $"{_apiUrl}/images/default.jpg" 
+                                        : $"{_apiUrl}/{currentUserApiResponse.Data.ImagePath}";
                                 }
                             }
                             

@@ -15,9 +15,14 @@ namespace SosyalMedya_Web.Controllers
         private const string AdminRole = "admin";
         private const string UserRole = "user";
         private readonly IHttpClientFactory _httpClientFactory;
-        public AuthController(IHttpClientFactory httpClientFactory)
+        private readonly IConfiguration _configuration;
+        private readonly string _apiUrl;
+
+        public AuthController(IHttpClientFactory httpClientFactory, IConfiguration configuration)
         {
             _httpClientFactory = httpClientFactory;
+            _configuration = configuration;
+            _apiUrl = _configuration["ApiUrl"] ?? "https://localhost:5190"; // Default API URL
         }
         [HttpGet("giris-yap")]
         public IActionResult Login()
@@ -31,7 +36,7 @@ namespace SosyalMedya_Web.Controllers
             var httpClient = _httpClientFactory.CreateClient();
             var jsonLogin = JsonConvert.SerializeObject(userForLogin);
             StringContent conten = new StringContent(jsonLogin, Encoding.UTF8, "application/json");
-            var responseMessage = await httpClient.PostAsync("https://localhost:5190/api/auth/login", conten);
+            var responseMessage = await httpClient.PostAsync($"{_apiUrl}/api/auth/login", conten);
 
             if (responseMessage.IsSuccessStatusCode)
             {
@@ -53,9 +58,6 @@ namespace SosyalMedya_Web.Controllers
                 TempData["LoginFail"] = userForLoginError.Message;
                 return RedirectToAction("Login", "Auth");
             }
-
-
-
         }
 
         private async Task<IActionResult> SignInUserByRole(List<string> roleClaims)
@@ -82,7 +84,6 @@ namespace SosyalMedya_Web.Controllers
             await HttpContext.SignInAsync(userPrincipal);
             return RedirectToAction("Index", "Home");
         }
-
 
         private async Task<ApiDataResponse<UserForLogin>> GetUserForLogin(HttpResponseMessage responseMessage)
         {

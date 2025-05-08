@@ -1,0 +1,171 @@
+@model CreateCodeShareViewModel
+@using SosyalMedya_Web.Models
+@{
+    ViewData["Title"] = "Kod Paylaş";
+    Layout = "~/Views/Shared/_HomeLayout.cshtml";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-12 mb-4">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="@Url.Action("Index", "CodeShare")">Kod Paylaşımları</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Yeni Kod Paylaş</li>
+                </ol>
+            </nav>
+        </div>
+        
+        <!-- Debug ModelState section -->
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="col-md-12 mb-3">
+                <div class="alert alert-danger">
+                    <h5>Form Validation Errors:</h5>
+                    <ul>
+                        @foreach (var modelState in ViewData.ModelState.Values)
+                        {
+                            foreach (var error in modelState.Errors)
+                            {
+                                <li>@error.ErrorMessage</li>
+                            }
+                        }
+                    </ul>
+                </div>
+            </div>
+        }
+        
+        <!-- Debug Info Section -->
+        @if (ViewBag.DebugInfo != null)
+        {
+            <div class="col-md-12 mb-3">
+                <div class="alert alert-info">
+                    <h5>Debug Info:</h5>
+                    <ul>
+                        @foreach (var item in ViewBag.DebugInfo)
+                        {
+                            <li><strong>@item.Key:</strong> @item.Value</li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        }
+        
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">Yeni Kod Paylaş</h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create" method="post">
+                        <div asp-validation-summary="All" class="text-danger"></div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="Title" class="form-label">Başlık <span class="text-danger">*</span></label>
+                            <input asp-for="Title" class="form-control" required>
+                            <span asp-validation-for="Title" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label">Açıklama <span class="text-danger">*</span></label>
+                            <textarea asp-for="Description" class="form-control" rows="3" required></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="Language" class="form-label">Programlama Dili <span class="text-danger">*</span></label>
+                            <select asp-for="Language" class="form-select" required>
+                                <option value="">Seçiniz...</option>
+                                <option value="C#">C#</option>
+                                <option value="JavaScript">JavaScript</option>
+                                <option value="TypeScript">TypeScript</option>
+                                <option value="Python">Python</option>
+                                <option value="Java">Java</option>
+                                <option value="HTML">HTML</option>
+                                <option value="CSS">CSS</option>
+                                <option value="PHP">PHP</option>
+                                <option value="Ruby">Ruby</option>
+                                <option value="Go">Go</option>
+                                <option value="Rust">Rust</option>
+                                <option value="Swift">Swift</option>
+                                <option value="Kotlin">Kotlin</option>
+                                <option value="C++">C++</option>
+                                <option value="C">C</option>
+                                <option value="Other">Diğer</option>
+                            </select>
+                            <span asp-validation-for="Language" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="CodeContent" class="form-label">Kod <span class="text-danger">*</span></label>
+                            <textarea asp-for="CodeContent" class="form-control" rows="10" required></textarea>
+                            <span asp-validation-for="CodeContent" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="Tags" class="form-label">Etiketler (virgülle ayırın)</label>
+                            <input asp-for="Tags" class="form-control" placeholder="asp.net, entity-framework, web-api">
+                            <span asp-validation-for="Tags" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="FileName" class="form-label">Dosya Adı (uzantı ile birlikte)</label>
+                            <input asp-for="FileName" class="form-control" placeholder="Program.cs">
+                            <small class="text-muted">Boş bırakırsanız, otomatik olarak oluşturulacaktır.</small>
+                            <span asp-validation-for="FileName" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="d-flex justify-content-end">
+                            <a href="@Url.Action("Index", "CodeShare")" class="btn btn-secondary me-2">İptal</a>
+                            <button type="submit" class="btn btn-primary">Paylaş</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/default.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            // Set up code editor with syntax highlighting preview
+            const codeEditor = document.getElementById('CodeContent');
+            const languageSelect = document.getElementById('Language');
+            
+            // Create preview element
+            const previewContainer = document.createElement('div');
+            previewContainer.className = 'code-preview mt-2 p-3 bg-light rounded';
+            previewContainer.style.display = 'none';
+            const pre = document.createElement('pre');
+            const code = document.createElement('code');
+            pre.appendChild(code);
+            previewContainer.appendChild(pre);
+            codeEditor.parentNode.appendChild(previewContainer);
+            
+            // Preview button
+            const previewBtn = document.createElement('button');
+            previewBtn.type = 'button';
+            previewBtn.className = 'btn btn-sm btn-secondary mt-2';
+            previewBtn.textContent = 'Önizleme';
+            previewBtn.onclick = function() {
+                code.textContent = codeEditor.value;
+                code.className = 'language-' + (languageSelect.value ? languageSelect.value.toLowerCase() : 'plaintext');
+                hljs.highlightElement(code);
+                previewContainer.style.display = previewContainer.style.display === 'none' ? 'block' : 'none';
+                previewBtn.textContent = previewContainer.style.display === 'none' ? 'Önizleme' : 'Önizlemeyi Kapat';
+            };
+            codeEditor.parentNode.insertBefore(previewBtn, previewContainer);
+            
+            // Tags input enhancement
+            const tagsInput = document.getElementById('Tags');
+            tagsInput.addEventListener('input', function() {
+                this.value = this.value.replace(/\s*,\s*/g, ',');
+            });
+        });
+    </script>
+} 

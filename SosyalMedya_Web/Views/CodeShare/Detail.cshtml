@@ -1,0 +1,202 @@
+@model CodeShareViewModel
+@{
+    ViewData["Title"] = Model.Title;
+    Layout = "~/Views/Shared/_HomeLayout.cshtml";
+    string codeAnalysis = ViewData["CodeAnalysis"] as string;
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-12 mb-4">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="@Url.Action("Index", "CodeShare")">Kod Paylaşımları</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">@Model.Title</li>
+                </ol>
+            </nav>
+        </div>
+        
+        <div class="col-md-9">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">@Model.Title</h4>
+                    <span class="badge bg-primary">@Model.Language</span>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-4">
+                        @if (string.IsNullOrEmpty(Model.UserImage))
+                        {
+                            <img src="~/frontend/assets/images/testLogo.jpg" class="rounded-circle me-3" width="50" height="50" alt="Profile Picture" />
+                        }
+                        else
+                        {
+                            <img src="@Model.UserImage" class="rounded-circle me-3" width="50" height="50" alt="Profile Picture" />
+                        }
+                        <div>
+                            <h5 class="mb-0">@Model.UserName</h5>
+                            <small class="text-muted">@string.Format("{0:dd.MM.yyyy HH:mm}", Model.SharingDate)</small>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h5>Açıklama</h5>
+                        <p>@Model.Description</p>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h5>Kod</h5>
+                        <div class="code-container p-3 bg-light rounded">
+                            <pre><code class="language-@Model.Language.ToLower()">@Model.CodeContent</code></pre>
+                        </div>
+                        <div class="d-flex justify-content-end mt-2">
+                            <a href="@Url.Action("DownloadCodeAsZip", "CodeShare", new { id = Model.Id })" class="btn btn-success">
+                                <i class="bi bi-download"></i> ZIP Olarak İndir
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h5>Etiketler</h5>
+                        <div>
+                            @if (!string.IsNullOrEmpty(Model.Tags))
+                            {
+                                @foreach (var tag in Model.Tags.Split(','))
+                                {
+                                    <span class="badge bg-secondary me-2">@tag.Trim()</span>
+                                }
+                            }
+                            else
+                            {
+                                <span class="text-muted">Etiket belirtilmemiş</span>
+                            }
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(codeAnalysis))
+                    {
+                        <div class="mb-4">
+                            <h5>Yapay Zeka Analizi</h5>
+                            <div class="p-3 bg-light rounded">
+                                <p class="mb-0">@codeAnalysis</p>
+                            </div>
+                        </div>
+                    }
+                    
+                    <div class="mb-4">
+                        <h5>Yorumlar (@(Model.Comments?.Count ?? 0))</h5>
+                        
+                        <div class="comment-form mb-4">
+                            <form action="@Url.Action("AddComment", "CodeShare")" method="post">
+                                <input type="hidden" name="codeShareId" value="@Model.Id" />
+                                <div class="input-group">
+                                    <input type="text" name="commentText" class="form-control" placeholder="Yorumunuzu yazın..." required>
+                                    <button type="submit" class="btn btn-primary">Gönder</button>
+                                </div>
+                            </form>
+                        </div>
+                        
+                        @if (Model.Comments != null && Model.Comments.Any())
+                        {
+                            <div class="comments-list">
+                                @foreach (var comment in Model.Comments.OrderByDescending(c => c.CommentDate))
+                                {
+                                    <div class="comment mb-3 p-3 border rounded">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="d-flex align-items-center">
+                                                @if (string.IsNullOrEmpty(comment.UserImage))
+                                                {
+                                                    <img src="~/frontend/assets/images/testLogo.jpg" class="rounded-circle me-2" width="40" height="40" alt="Profile Picture" />
+                                                }
+                                                else
+                                                {
+                                                    <img src="@comment.UserImage" class="rounded-circle me-2" width="40" height="40" alt="Profile Picture" />
+                                                }
+                                                <div>
+                                                    <strong>@comment.UserName</strong>
+                                                    <small class="text-muted d-block">@string.Format("{0:dd.MM.yyyy HH:mm}", comment.CommentDate)</small>
+                                                </div>
+                                            </div>
+                                            @if (comment.UserId == ViewBag.CurrentUserId || User.IsInRole("admin"))
+                                            {
+                                                <form action="@Url.Action("DeleteComment", "CodeShare")" method="post" onsubmit="return confirm('Bu yorumu silmek istediğinize emin misiniz?');">
+                                                    <input type="hidden" name="commentId" value="@comment.Id" />
+                                                    <input type="hidden" name="codeShareId" value="@Model.Id" />
+                                                    <button type="submit" class="btn btn-sm btn-danger">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </form>
+                                            }
+                                        </div>
+                                        <p class="mt-2 mb-0">@comment.CommentText</p>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="alert alert-light">Henüz yorum yapılmamış.</div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">İstatistikler</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-3">
+                        <span><i class="bi bi-eye"></i> Görüntülenme:</span>
+                        <span class="badge bg-primary">@Model.ViewCount</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span><i class="bi bi-download"></i> İndirme:</span>
+                        <span class="badge bg-success">@Model.DownloadCount</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span><i class="bi bi-chat-dots"></i> Yorum:</span>
+                        <span class="badge bg-info">@(Model.Comments?.Count ?? 0)</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span><i class="bi bi-calendar3"></i> Paylaşım Tarihi:</span>
+                        <span class="badge bg-secondary">@string.Format("{0:dd.MM.yyyy}", Model.SharingDate)</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Paylaşan</h5>
+                </div>
+                <div class="card-body text-center">
+                    @if (string.IsNullOrEmpty(Model.UserImage))
+                    {
+                        <img src="~/frontend/assets/images/testLogo.jpg" class="rounded-circle mb-3" width="80" height="80" alt="Profile Picture" />
+                    }
+                    else
+                    {
+                        <img src="@Model.UserImage" class="rounded-circle mb-3" width="80" height="80" alt="Profile Picture" />
+                    }
+                    <h5>@Model.UserName</h5>
+                    <a href="@Url.Action("Profile", "Profile", new { userId = Model.UserId })" class="btn btn-outline-primary">
+                        <i class="bi bi-person"></i> Profili Görüntüle
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/default.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            document.querySelectorAll('pre code').forEach((el) => {
+                hljs.highlightElement(el);
+            });
+        });
+    </script>
+} 

@@ -1,4 +1,4 @@
-@model List<ArticleDetail>
+@model ProfileViewModel
 @{
     ViewData["Title"] = "Profile";
     Layout = "~/Views/Shared/_HomeLayout.cshtml";
@@ -38,128 +38,256 @@
                             </div>
                         </div>
                     </div>
+                    <!-- Yapay Zeka Analizi -->
+                    <div class="mt-3" id="aiAnalysis">
+                        <!-- Yapay zeka analizi buraya yüklenecek -->
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Paylaşımlar -->
-        <div class="col-md-8">
-            @if (Model != null && Model.Any())
-            {
-                foreach (var article in Model)
-                {
-                    <div class="card mb-3">
-                        <div class="card-body">
-                            <div class="d-flex align-items-center mb-3">
-                                <img src="@ViewData["UserImage"]" class="rounded-circle me-2" width="40" height="40" alt="">
-                                <div>
-                                    <h6 class="mb-0">@ViewData["UserName"]</h6>
-                                    <small class="text-muted">@string.Format("{0:dd.MM.yyyy HH:mm:ss}", article.SharingDate)</small>
-                                </div>
-                            </div>
-                            <div class="mb-3">
-                                <span class="badge bg-primary">#@article.TopicTitle</span>
-                            </div>
-                            @Html.Raw(article.Content)
-                            
-                            <!-- Yorum Bölümü -->
-                            <div class="pt-3 ps-2 pe-2">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    @{
-                                        var validComments = article.CommentDetails?.Where(x => x.Id != -1).Count() ?? 0;
-                                        if (validComments > 0)
-                                        {
-                                            <button class="btn btn-outline-primary show-comments-btn" type="button" data-article-id="@article.Id">
-                                                <i class="bi bi-chat-dots"></i> 
-                                                Yorumlar (@validComments)
-                                            </button>
-                                        }
-                                        else
-                                        {
-                                            <span class="text-muted">Henüz yorum yapılmamış</span>
-                                        }
-                                    }
-                                    <button class="btn btn-outline-secondary">@string.Format("{0:dd.MM.yyyy}", article.SharingDate)</button>
-                                </div>
-                                
-                                <div class="comments-section mt-3" id="comments-@article.Id" style="display: none;">
-                                    @if (article.CommentDetails != null && article.CommentDetails.Any())
-                                    {
-                                        foreach (var comment in article.CommentDetails)
-                                        {
-                                            <div class="comment mb-3 p-3 border rounded">
-                                                <div class="d-flex justify-content-between align-items-center">
-                                                    <div class="d-flex align-items-center">
-                                                        @if (string.IsNullOrEmpty(comment.Image))
-                                                        {
-                                                            <img src="https://localhost:5190/images/default.jpg" class="rounded-circle me-2" width="40" height="40" />
-                                                        }
-                                                        else
-                                                        {
-                                                            <img src="https://localhost:5190/@comment.Image" class="rounded-circle me-2" width="40" height="40" />
-                                                        }
-                                                        <div>
-                                                            <strong>@comment.UserName</strong>
-                                                            <small class="text-muted d-block">@string.Format("{0:dd.MM.yyyy HH:mm:ss}", comment.CommentDate)</small>
-                                                        </div>
-                                                    </div>
-                                                    @if (comment.UserId == ViewBag.CurrentUserId || User.IsInRole("admin"))
+        <!-- İçerik Türü Seçimi -->
+        <div class="col-md-12 mb-4">
+            <ul class="nav nav-tabs" id="profileTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="posts-tab" data-bs-toggle="tab" data-bs-target="#posts" type="button" role="tab" aria-controls="posts" aria-selected="true">
+                        <i class="bi bi-file-text"></i> İçerik Paylaşımları
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="code-tab" data-bs-toggle="tab" data-bs-target="#code" type="button" role="tab" aria-controls="code" aria-selected="false">
+                        <i class="bi bi-code-square"></i> Kod Paylaşımları
+                    </button>
+                </li>
+            </ul>
+        </div>
+
+        <div class="tab-content" id="profileTabsContent">
+            <!-- İçerik Paylaşımları -->
+            <div class="tab-pane fade show active" id="posts" role="tabpanel" aria-labelledby="posts-tab">
+                <div class="row">
+                    <div class="col-md-8">
+                        @if (Model.Articles != null && Model.Articles.Any())
+                        {
+                            foreach (var article in Model.Articles)
+                            {
+                                <div class="card mb-3">
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-center mb-3">
+                                            <img src="@ViewData["UserImage"]" class="rounded-circle me-2" width="40" height="40" alt="">
+                                            <div>
+                                                <h6 class="mb-0">@ViewData["UserName"]</h6>
+                                                <small class="text-muted">@(string.IsNullOrEmpty(article.SharingDate) ? "-" : string.Format("{0}", article.SharingDate))</small>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <span class="badge bg-primary">#@article.TopicTitle</span>
+                                        </div>
+                                        @Html.Raw(article.Content)
+                                        
+                                        <!-- Yorum Bölümü -->
+                                        <div class="pt-3 ps-2 pe-2">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                @{
+                                                    var validComments = article.CommentDetails?.Where(x => x.Id != -1).Count() ?? 0;
+                                                    if (validComments > 0)
                                                     {
-                                                        <button class="btn btn-sm btn-danger delete-comment" data-comment="@comment.Id" data-bs-toggle="modal" data-bs-target="#deleteCommentModal">
-                                                            <i class="bi bi-trash"></i>
+                                                        <button class="btn btn-outline-primary show-comments-btn" type="button" data-article-id="@article.Id">
+                                                            <i class="bi bi-chat-dots"></i> 
+                                                            Yorumlar (@validComments)
                                                         </button>
                                                     }
+                                                    else
+                                                    {
+                                                        <span class="text-muted">Henüz yorum yapılmamış</span>
+                                                    }
+                                                }
+                                                <button class="btn btn-outline-secondary">@(string.IsNullOrEmpty(article.SharingDate) ? "-" : string.Format("{0}", article.SharingDate.Split(' ')[0]))</button>
+                                            </div>
+                                            
+                                            <div class="comments-section mt-3" id="comments-@article.Id" style="display: none;">
+                                                @if (article.CommentDetails != null && article.CommentDetails.Any())
+                                                {
+                                                    foreach (var comment in article.CommentDetails)
+                                                    {
+                                                        <div class="comment mb-3 p-3 border rounded">
+                                                            <div class="d-flex justify-content-between align-items-center">
+                                                                <div class="d-flex align-items-center">
+                                                                    @if (string.IsNullOrEmpty(comment.Image))
+                                                                    {
+                                                                        <img src="https://localhost:5190/images/default.jpg" class="rounded-circle me-2" width="40" height="40" />
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <img src="https://localhost:5190/@comment.Image" class="rounded-circle me-2" width="40" height="40" />
+                                                                    }
+                                                                    <div>
+                                                                        <strong>@comment.UserName</strong>
+                                                                        <small class="text-muted d-block">@string.Format("{0:dd.MM.yyyy HH:mm:ss}", comment.CommentDate)</small>
+                                                                    </div>
+                                                                </div>
+                                                                @if (comment.UserId == ViewBag.CurrentUserId || User.IsInRole("admin"))
+                                                                {
+                                                                    <button class="btn btn-sm btn-danger delete-comment" data-comment="@comment.Id" data-bs-toggle="modal" data-bs-target="#deleteCommentModal">
+                                                                        <i class="bi bi-trash"></i>
+                                                                    </button>
+                                                                }
+                                                            </div>
+                                                            <p class="mt-2 mb-0">@comment.CommentText</p>
+                                                        </div>
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    <p class="text-muted">Henüz yorum yapılmamış.</p>
+                                                }
+                                                <div class="comment-form-section mt-3">
+                                                    <form class="comment-form" data-article-id="@article.Id">
+                                                        <div class="input-group">
+                                                            <input type="text" name="CommentText" class="form-control" placeholder="Yorumunuzu yazın...">
+                                                            <button type="submit" class="btn btn-primary">Gönder</button>
+                                                        </div>
+                                                    </form>
                                                 </div>
-                                                <p class="mt-2 mb-0">@comment.CommentText</p>
                                             </div>
-                                        }
-                                    }
-                                    else
-                                    {
-                                        <p class="text-muted">Henüz yorum yapılmamış.</p>
-                                    }
-                                    <div class="comment-form-section mt-3">
-                                        <form class="comment-form" data-article-id="@article.Id">
-                                            <div class="input-group">
-                                                <input type="text" name="CommentText" class="form-control" placeholder="Yorumunuzu yazın...">
-                                                <button type="submit" class="btn btn-primary">Gönder</button>
-                                            </div>
-                                        </form>
+                                        </div>
                                     </div>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="alert alert-info">Henüz içerik paylaşımı yapılmamış.</div>
+                        }
+                    </div>
+
+                    <!-- Sağ Sidebar -->
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">İçerik İstatistikleri</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between mb-3">
+                                    <span>Toplam Paylaşım:</span>
+                                    <span class="badge bg-primary">@(Model.Articles?.Count ?? 0)</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-3">
+                                    <span>Toplam Yorum:</span>
+                                    <span class="badge bg-info">@(Model.Articles?.SelectMany(a => a.CommentDetails)?.Where(c => c.Id != -1)?.Count() ?? 0)</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-3">
+                                    <span>Son Paylaşım:</span>
+                                    <span class="badge bg-success">@(Model.Articles?.Any() == true ? (string.IsNullOrEmpty(Model.Articles.First().SharingDate) ? "-" : Model.Articles.First().SharingDate) : "-")</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-3">
+                                    <span>Profil Oluşturma:</span>
+                                    <span class="badge bg-secondary">@ViewData["UserRegistrationDate"]</span>
                                 </div>
                             </div>
                         </div>
                     </div>
-                }
-            }
-            else
-            {
-                <div class="alert alert-info">Henüz paylaşım yapılmamış.</div>
-            }
-        </div>
-
-        <!-- Sağ Sidebar -->
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">İstatistikler</h5>
                 </div>
-                <div class="card-body">
-                    <div class="d-flex justify-content-between mb-3">
-                        <span>Toplam Paylaşım:</span>
-                        <span class="badge bg-primary">@(Model?.Count ?? 0)</span>
-                    </div>
-                    <div class="d-flex justify-content-between mb-3">
-                        <span>Toplam Yorum:</span>
-                        <span class="badge bg-info">@(Model?.SelectMany(a => a.CommentDetails)?.Where(c => c.Id != -1)?.Count() ?? 0)</span>
-                    </div>
-                    <div class="d-flex justify-content-between mb-3">
-                        <span>Son Paylaşım:</span>
-                        <span class="badge bg-success">@(Model?.Any() == true ? Model.First().SharingDate : "-")</span>
-                    </div>
-                    <div class="d-flex justify-content-between mb-3">
-                        <span>Profil Oluşturma:</span>
-                        <span class="badge bg-secondary">@ViewData["UserRegistrationDate"]</span>
+            </div>
+
+            <!-- Kod Paylaşımları -->
+            <div class="tab-pane fade" id="code" role="tabpanel" aria-labelledby="code-tab">
+                <div class="row">
+                    @if (Model.CodeShares != null && Model.CodeShares.Any())
+                    {
+                        <div class="col-md-12">
+                            <div class="row">
+                                @foreach (var codeShare in Model.CodeShares)
+                                {
+                                    <div class="col-md-6 mb-4">
+                                        <div class="card h-100">
+                                            <div class="card-header d-flex justify-content-between align-items-center">
+                                                <h5 class="mb-0">@codeShare.Title</h5>
+                                                <span class="badge bg-primary">@codeShare.Language</span>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="d-flex align-items-center mb-3">
+                                                    @if (string.IsNullOrEmpty(codeShare.UserImage))
+                                                    {
+                                                        <img src="~/frontend/assets/images/testLogo.jpg" class="rounded-circle me-2" width="40" height="40" alt="Profile Picture" />
+                                                    }
+                                                    else
+                                                    {
+                                                        <img src="@codeShare.UserImage" class="rounded-circle me-2" width="40" height="40" alt="Profile Picture" />
+                                                    }
+                                                    <div>
+                                                        <h6 class="mb-0">@codeShare.UserName</h6>
+                                                        <small class="text-muted">@string.Format("{0:dd.MM.yyyy HH:mm}", codeShare.SharingDate)</small>
+                                                    </div>
+                                                </div>
+                                                
+                                                <p class="mb-3">@codeShare.Description</p>
+                                                
+                                                <div class="code-preview mb-3 p-2 bg-light rounded">
+                                                    <pre class="mb-0"><code class="language-@codeShare.Language.ToLower()">@(codeShare.CodeContent.Length > 150 ? codeShare.CodeContent.Substring(0, 150) + "..." : codeShare.CodeContent)</code></pre>
+                                                </div>
+                                                
+                                                <div class="mb-3">
+                                                    @if (!string.IsNullOrEmpty(codeShare.Tags))
+                                                    {
+                                                        @foreach (var tag in codeShare.Tags.Split(','))
+                                                        {
+                                                            <span class="badge bg-secondary me-1">@tag.Trim()</span>
+                                                        }
+                                                    }
+                                                </div>
+                                                
+                                                <div class="d-flex justify-content-between">
+                                                    <div>
+                                                        <span class="me-3"><i class="bi bi-eye"></i> @codeShare.ViewCount</span>
+                                                        <span class="me-3"><i class="bi bi-download"></i> @codeShare.DownloadCount</span>
+                                                        <span><i class="bi bi-chat-dots"></i> @(codeShare.Comments?.Count ?? 0)</span>
+                                                    </div>
+                                                    <a href="@Url.Action("Detail", "CodeShare", new { id = codeShare.Id })" class="btn btn-sm btn-outline-primary">
+                                                        <i class="bi bi-info-circle"></i> Detaylar
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="col-md-12">
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle me-2"></i> Henüz kod paylaşımı bulunmamaktadır.
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Sağ Sidebar -->
+                    <div class="col-md-4 mt-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">Kod İstatistikleri</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between mb-3">
+                                    <span>Toplam Kod Paylaşımı:</span>
+                                    <span class="badge bg-primary">@(Model.CodeShares?.Count ?? 0)</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-3">
+                                    <span>Toplam Yorum:</span>
+                                    <span class="badge bg-info">@(Model.CodeShares?.SelectMany(c => c.Comments ?? new List<CodeCommentViewModel>())?.Count() ?? 0)</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-3">
+                                    <span>Toplam Görüntülenme:</span>
+                                    <span class="badge bg-success">@(Model.CodeShares?.Sum(c => c.ViewCount) ?? 0)</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-3">
+                                    <span>Toplam İndirme:</span>
+                                    <span class="badge bg-secondary">@(Model.CodeShares?.Sum(c => c.DownloadCount) ?? 0)</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -222,6 +350,8 @@
 </div>
 
 @section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/default.min.css">
     <script>
         $(document).ready(function() {
             // Takipçi sayılarını yükle
@@ -528,5 +658,182 @@
                 });
             });
         });
+
+        document.addEventListener("DOMContentLoaded", function() {
+            // Kod paylaşımlarını yükle
+            function loadCodeShares() {
+                fetch(`/api/CodeShares/getbyuserid?userId=${@UserId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            const codeShares = data.data;
+                            const container = document.getElementById('codeSharesContainer');
+                            
+                            if (codeShares.length === 0) {
+                                container.innerHTML = `
+                                    <div class="alert alert-info">
+                                        <i class="bi bi-info-circle me-2"></i> Henüz kod paylaşımı bulunmamaktadır.
+                                    </div>
+                                `;
+                            } else {
+                                let html = '<div class="row">';
+                                
+                                codeShares.forEach(code => {
+                                    html += `
+                                        <div class="col-md-6 mb-4">
+                                            <div class="card h-100">
+                                                <div class="card-header d-flex justify-content-between align-items-center">
+                                                    <h5 class="mb-0">${code.title}</h5>
+                                                    <span class="badge bg-primary">${code.language}</span>
+                                                </div>
+                                                <div class="card-body">
+                                                    <p class="mb-3">${code.description}</p>
+                                                    
+                                                    <div class="code-preview mb-3 p-2 bg-light rounded">
+                                                        <pre class="mb-0"><code class="language-${code.language.toLowerCase()}">${code.codeContent.length > 150 ? code.codeContent.substring(0, 150) + '...' : code.codeContent}</code></pre>
+                                                    </div>
+                                                    
+                                                    <div class="mb-3">
+                                                        ${code.tags ? code.tags.split(',').map(tag => `<span class="badge bg-secondary me-1">${tag.trim()}</span>`).join('') : ''}
+                                                    </div>
+                                                    
+                                                    <div class="d-flex justify-content-between">
+                                                        <div>
+                                                            <span class="me-3"><i class="bi bi-eye"></i> ${code.viewCount}</span>
+                                                            <span class="me-3"><i class="bi bi-download"></i> ${code.downloadCount}</span>
+                                                            <span><i class="bi bi-chat-dots"></i> ${code.comments ? code.comments.length : 0}</span>
+                                                        </div>
+                                                        <a href="/CodeShare/Detail/${code.id}" class="btn btn-sm btn-outline-primary">
+                                                            <i class="bi bi-info-circle"></i> Detaylar
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    `;
+                                });
+                                
+                                html += '</div>';
+                                container.innerHTML = html;
+                                
+                                // Syntax highlighting uygula
+                                document.querySelectorAll('pre code').forEach((el) => {
+                                    hljs.highlightElement(el);
+                                });
+                            }
+                        } else {
+                            document.getElementById('codeSharesContainer').innerHTML = `
+                                <div class="alert alert-danger">
+                                    <i class="bi bi-exclamation-triangle me-2"></i> Kod paylaşımları yüklenirken bir hata oluştu.
+                                </div>
+                            `;
+                        }
+                    })
+                    .catch(error => {
+                        document.getElementById('codeSharesContainer').innerHTML = `
+                            <div class="alert alert-danger">
+                                <i class="bi bi-exclamation-triangle me-2"></i> Kod paylaşımları yüklenirken bir hata oluştu.
+                            </div>
+                        `;
+                    });
+            }
+            
+            // Yapay zeka analizi yükle
+            function loadAIAnalysis() {
+                fetch(`/AI/AnalyzeUserInterests?userId=${@UserId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const container = document.getElementById('aiAnalysis');
+                        
+                        if (data.error) {
+                            container.innerHTML = '';
+                            return;
+                        }
+                        
+                        let html = `
+                            <div class="alert alert-info mt-3">
+                                <h5><i class="bi bi-robot"></i> Yapay Zeka Profil Analizi</h5>
+                                <p>${data.activitySummary}</p>
+                                
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <h6>En Çok Kullanılan Konular</h6>
+                                        <ul class="list-group">
+                        `;
+                        
+                        if (data.topTopics && data.topTopics.length > 0) {
+                            data.topTopics.forEach(topic => {
+                                html += `<li class="list-group-item d-flex justify-content-between align-items-center">
+                                    ${topic.key}
+                                    <span class="badge bg-primary rounded-pill">${topic.value}</span>
+                                </li>`;
+                            });
+                        } else {
+                            html += `<li class="list-group-item">Henüz yeterli veri yok</li>`;
+                        }
+                        
+                        html += `
+                                        </ul>
+                                    </div>
+                                    
+                                    <div class="col-md-4">
+                                        <h6>En Çok Kullanılan Programlama Dilleri</h6>
+                                        <ul class="list-group">
+                        `;
+                        
+                        if (data.topLanguages && data.topLanguages.length > 0) {
+                            data.topLanguages.forEach(lang => {
+                                html += `<li class="list-group-item d-flex justify-content-between align-items-center">
+                                    ${lang.key}
+                                    <span class="badge bg-success rounded-pill">${lang.value}</span>
+                                </li>`;
+                            });
+                        } else {
+                            html += `<li class="list-group-item">Henüz yeterli veri yok</li>`;
+                        }
+                        
+                        html += `
+                                        </ul>
+                                    </div>
+                                    
+                                    <div class="col-md-4">
+                                        <h6>En Çok Kullanılan Kod Etiketleri</h6>
+                                        <ul class="list-group">
+                        `;
+                        
+                        if (data.topCodeTags && data.topCodeTags.length > 0) {
+                            data.topCodeTags.forEach(tag => {
+                                html += `<li class="list-group-item d-flex justify-content-between align-items-center">
+                                    ${tag.key}
+                                    <span class="badge bg-info rounded-pill">${tag.value}</span>
+                                </li>`;
+                            });
+                        } else {
+                            html += `<li class="list-group-item">Henüz yeterli veri yok</li>`;
+                        }
+                        
+                        html += `
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        
+                        container.innerHTML = html;
+                    })
+                    .catch(error => {
+                        document.getElementById('aiAnalysis').innerHTML = '';
+                    });
+            }
+            
+            // Yapay zeka analizini yükle
+            loadAIAnalysis();
+
+            // Code highlighting
+            document.querySelectorAll('pre code').forEach((el) => {
+                hljs.highlightElement(el);
+            });
+        });
     </script>
 }
+

@@ -3,16 +3,21 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using SosyalMedya_Web.Models;
 using System.Globalization;
+using System.Net.Http.Headers;
 
 namespace SosyalMedya_Web.Controllers
 {
     public class ProfileController : BaseController
     {
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IConfiguration _configuration;
+        private readonly string _apiUrl;
 
-        public ProfileController(IHttpClientFactory httpClientFactory) : base(httpClientFactory)
+        public ProfileController(IHttpClientFactory httpClientFactory, IConfiguration configuration) : base(httpClientFactory)
         {
             _httpClientFactory = httpClientFactory;
+            _configuration = configuration;
+            _apiUrl = _configuration["ApiUrl"] ?? "https://localhost:5190"; // Default API URL if not found in configuration
         }
 
         [Authorize(Roles = "admin,user")]
@@ -44,7 +49,7 @@ namespace SosyalMedya_Web.Controllers
             var httpClient = _httpClientFactory.CreateClient();
 
             // Get user details
-            var userResponse = await httpClient.GetAsync($"https://localhost:5190/api/Users/getbyid?id={userId}");
+            var userResponse = await httpClient.GetAsync($"{_apiUrl}/api/Users/getbyid?id={userId}");
             if (!userResponse.IsSuccessStatusCode)
             {
                 return NotFound();
@@ -60,14 +65,14 @@ namespace SosyalMedya_Web.Controllers
             // Profil sayfasında görüntülenecek kullanıcı bilgileri
             ViewData["UserName"] = $"{userApiResponse.Data.FirstName} {userApiResponse.Data.LastName}";
             ViewData["UserImage"] = string.IsNullOrEmpty(userApiResponse.Data.ImagePath)
-                ? "https://localhost:5190/images/default.jpg"
-                : $"https://localhost:5190/{userApiResponse.Data.ImagePath}";
+                ? "/frontend/assets/images/testLogo.jpg"
+                : $"{_apiUrl}/{userApiResponse.Data.ImagePath}";
             ViewData["UserRegistrationDate"] = "-";
 
             // Get follow status if not own profile
             if (!isOwnProfile && currentUserId.HasValue)
             {
-                var followResponse = await httpClient.GetAsync($"https://localhost:5190/api/UserFollow/isfollowing?followerId={currentUserId}&followedId={userId}");
+                var followResponse = await httpClient.GetAsync($"{_apiUrl}/api/UserFollow/isfollowing?followerId={currentUserId}&followedId={userId}");
                 if (followResponse.IsSuccessStatusCode)
                 {
                     var followJson = await followResponse.Content.ReadAsStringAsync();
@@ -85,7 +90,9 @@ namespace SosyalMedya_Web.Controllers
             }
 
             // Get user's articles
-            var articlesResponse = await httpClient.GetAsync($"https://localhost:5190/api/Articles/getarticlewithdetailsbyuserid?id={userId}");
+            var articlesResponse = await httpClient.GetAsync($"{_apiUrl}/api/Articles/getarticlewithdetailsbyuserid?id={userId}");
+            List<ArticleDetail> articles = new List<ArticleDetail>();
+            
             if (articlesResponse.IsSuccessStatusCode)
             {
                 var jsonResponse = await articlesResponse.Content.ReadAsStringAsync();
@@ -94,7 +101,7 @@ namespace SosyalMedya_Web.Controllers
                 if (apiDataResponse.Success && apiDataResponse.Data != null)
                 {
                     // Paylaşımları en yeni tarihten eskiye doğru sırala
-                    var sortedArticles = apiDataResponse.Data
+                    articles = apiDataResponse.Data
                         .OrderByDescending(a => {
                             // Esnek bir şekilde tarihi parse etmeye çalış
                             if (DateTime.TryParse(a.SharingDate, CultureInfo.GetCultureInfo("tr-TR"), DateTimeStyles.None, out DateTime parsedDate))
@@ -105,14 +112,79 @@ namespace SosyalMedya_Web.Controllers
                             return DateTime.MinValue;
                         })
                         .ToList();
-
-                    return View("Profile", sortedArticles);
                 }
-
-                return View("Profile", new List<ArticleDetail>());
             }
+            
+            // Get user's code shares
+            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", GetToken());
+            var codeSharesResponse = await httpClient.GetAsync($"{_apiUrl}/api/CodeShares/getbyuserid?userId={userId}");
+            List<CodeShareViewModel> codeShares = new List<CodeShareViewModel>();
+            
+            if (codeSharesResponse.IsSuccessStatusCode)
+            {
+                var jsonResponse = await codeSharesResponse.Content.ReadAsStringAsync();
+                var apiResponse = JsonConvert.DeserializeObject<ApiResponse>(jsonResponse);
+                
+                if (apiResponse.Success)
+                {
+                    var jsonSettings = new JsonSerializerSettings
+                    {
+                        DateFormatHandling = DateFormatHandling.IsoDateFormat,
+                        DateTimeZoneHandling = DateTimeZoneHandling.Local,
+                        DateParseHandling = DateParseHandling.DateTime
+                    };
+                    
+                    codeShares = JsonConvert.DeserializeObject<List<CodeShareViewModel>>(
+                        apiResponse.Data.ToString(), jsonSettings);
+                }
+            }
+            
+            // Create the profile view model
+            var profileViewModel = new ProfileViewModel
+            {
+                Articles = articles,
+                CodeShares = codeShares
+            };
 
-            return View("Profile", new List<ArticleDetail>());
+            return View("Profile", profileViewModel);
+        }
+        
+        [HttpGet]
+        public async Task<IActionResult> GetUserCodeShares(int userId)
+        {
+            try
+            {
+                var httpClient = _httpClientFactory.CreateClient();
+                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", GetToken());
+                var response = await httpClient.GetAsync($"{_apiUrl}/api/CodeShares/getbyuserid?userId={userId}");
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    var apiResponse = JsonConvert.DeserializeObject<ApiResponse>(content);
+                    
+                    if (apiResponse.Success)
+                    {
+                        var jsonSettings = new JsonSerializerSettings
+                        {
+                            DateFormatHandling = DateFormatHandling.IsoDateFormat,
+                            DateTimeZoneHandling = DateTimeZoneHandling.Local,
+                            DateParseHandling = DateParseHandling.DateTime
+                        };
+                        
+                        var codeShares = JsonConvert.DeserializeObject<List<CodeShareViewModel>>(
+                            apiResponse.Data.ToString(), jsonSettings);
+                        
+                        return Json(new { success = true, data = codeShares });
+                    }
+                }
+                
+                return Json(new { success = false, message = "Kod paylaşımları yüklenirken bir hata oluştu." });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = $"Hata: {ex.Message}" });
+            }
         }
     }
 }
