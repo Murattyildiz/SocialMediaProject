@@ -1,3 +1,4 @@
+
 /* Message (Mesajlar) sayfası özel stilleri */
 
 /* Konuşma sayfasındaki başlıkta yer alan kişi adının okunurluğunu artırma */
@@ -10,4 +11,4 @@
 /* Opsiyonel: Eğer resim ve isim arasında daha fazla boşluk istenirse */
 .card-header.bg-primary img.rounded-circle {
     margin-right: 12px !important; /* Bootstrap'in me-2'sini ezer */
-} 
+}

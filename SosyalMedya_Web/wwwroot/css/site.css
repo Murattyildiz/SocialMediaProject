@@ -27,10 +27,10 @@ a {
     text-decoration: none;
 }
 
-a:hover {
-    color: #0056b3;
-    text-decoration: underline;
-}
+    a:hover {
+        color: #0056b3;
+        text-decoration: underline;
+    }
 
 /* Butonlar */
 .btn {
@@ -46,10 +46,10 @@ a:hover {
     color: white;
 }
 
-.btn-primary:hover {
-    background-color: #0056b3;
-    border-color: #0056b3;
-}
+    .btn-primary:hover {
+        background-color: #0056b3;
+        border-color: #0056b3;
+    }
 
 .btn-secondary {
     background-color: #6c757d;
@@ -57,10 +57,10 @@ a:hover {
     color: white;
 }
 
-.btn-secondary:hover {
-    background-color: #545b62;
-    border-color: #545b62;
-}
+    .btn-secondary:hover {
+        background-color: #545b62;
+        border-color: #545b62;
+    }
 
 .btn-info {
     background-color: #17a2b8;
@@ -68,10 +68,10 @@ a:hover {
     color: white;
 }
 
-.btn-info:hover {
-    background-color: #117a8b;
-    border-color: #117a8b;
-}
+    .btn-info:hover {
+        background-color: #117a8b;
+        border-color: #117a8b;
+    }
 
 
 /* Form Elemanları */
@@ -82,11 +82,11 @@ a:hover {
     font-size: 1rem;
 }
 
-.form-control:focus {
-    border-color: #80bdff;
-    outline: 0;
-    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-}
+    .form-control:focus {
+        border-color: #80bdff;
+        outline: 0;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
 
 /* Kartlar (Genel İçerik Kutuları) */
 .card {

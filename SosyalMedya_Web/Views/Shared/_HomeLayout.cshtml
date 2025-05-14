@@ -3,7 +3,7 @@
 }
 
 <!doctype html>
-<html lang="tr">
+<html lang="tr" style="height: 100%;">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -26,6 +26,13 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.8/dist/sweetalert2.min.css">
     <style>
         /* Özel büyük boyutlu UI stilleri */
+        html, body {
+            height: 100%;
+            min-height: 100%;
+            overflow-y: auto !important;
+            position: relative;
+        }
+
         body {
             font-size: 1.1rem;
         }
@@ -96,6 +103,17 @@
         /* Toast bildirimleri */
         .toast {
             font-size: 1.1rem;
+        }
+
+        .container {
+            min-height: 100%;
+            position: relative;
+            overflow-y: visible;
+        }
+
+        main {
+            min-height: 100%;
+            overflow-y: visible;
         }
 
         /*    /* Mobil uyumluluk */
