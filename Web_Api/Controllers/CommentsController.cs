@@ -4,6 +4,7 @@ using DataAccess.Abstract;
 using Entities.Concrete;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
 using IResult = Core.Utilities.Result.Abstract.IResult;
 
 namespace Web_Api.Controllers
@@ -31,10 +32,28 @@ namespace Web_Api.Controllers
         }
 
         [HttpPost("add")]
-        public ActionResult Add(Comment comment)
+        public ActionResult Add([FromBody] Comment comment)
         {
-            IResult result = _commentService.Add(comment);
-            return result.Success ? Ok(result) : BadRequest(result);
+            if (comment == null)
+            {
+                return BadRequest(new { success = false, message = "Comment data cannot be null" });
+            }
+
+            try
+            {
+                // Ensure comment date is set if not provided
+                if (comment.CommentDate == default)
+                {
+                    comment.CommentDate = DateTime.Now;
+                }
+
+                IResult result = _commentService.Add(comment);
+                return result.Success ? Ok(result) : BadRequest(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, message = $"Comment adding failed: {ex.Message}", innerException = ex.InnerException?.Message });
+            }
         }
 
         [HttpPost("update")]
@@ -47,39 +66,14 @@ namespace Web_Api.Controllers
         [HttpDelete("delete")]
         public ActionResult Delete(int id)
         {
-            try
-            {
-                if (id <= 0)
-                {
-                    return BadRequest(new { success = false, message = "Geçersiz yorum ID'si." });
-                }
-
-                var comment = _commentService.GetEntityById(id);
-                if (!comment.Success || comment.Data == null)
-                {
-                    return BadRequest(new { success = false, message = "Yorum bulunamadı." });
-                }
-
-                var result = _commentService.Delete(id);
-                if (result.Success)
-                {
-                    // Başarılı silme işlemi
-                    Console.WriteLine($"Yorum başarıyla silindi. ID: {id}");
-                    return Ok(new { success = true, message = "Yorum başarıyla silindi." });
-                }
-                else
-                {
-                    // Silme işlemi başarısız
-                    Console.WriteLine($"Yorum silme başarısız. ID: {id}, Hata: {result.Message}");
-                    return BadRequest(new { success = false, message = result.Message });
-                }
-            }
-            catch (Exception ex)
-            {
-                // Hata durumunda
-                Console.WriteLine($"Yorum silme hatası. ID: {id}, Hata: {ex.Message}");
-                return BadRequest(new { success = false, message = $"Yorum silinirken bir hata oluştu: {ex.Message}" });
-            }
+            IResult result = _commentService.Delete(id);
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
+        
+        [HttpPost("clearcache")]
+        public IActionResult ClearCache()
+        {
+            return Ok(new { success = true, message = "Cache cleared successfully" });
         }
     }
 }

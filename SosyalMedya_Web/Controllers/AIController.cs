@@ -29,41 +29,37 @@ namespace SosyalMedya_Web.Controllers
         [HttpGet]
         public async Task<IActionResult> AnalyzeUserInterests(int userId)
         {
-            // Get articles by user ID
-            var client = _httpClientFactory.CreateClient();
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", GetToken());
-            var response = await client.GetAsync($"{_apiUrl}/api/Articles/getbyuserid?userId={userId}");
-
-            if (response.IsSuccessStatusCode)
+            try
             {
-                var content = await response.Content.ReadAsStringAsync();
-                var apiResponse = JsonConvert.DeserializeObject<ApiResponse>(content);
+                // Get articles by user ID
+                var client = _httpClientFactory.CreateClient();
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", GetToken());
+                var response = await client.GetAsync($"{_apiUrl}/api/Articles/getarticlewithdetailsbyuserid?id={userId}");
 
-                if (apiResponse.Success)
+                List<ArticleDetail> articles = new List<ArticleDetail>();
+                List<CodeShareViewModel> codeShares = new List<CodeShareViewModel>();
+
+                if (response.IsSuccessStatusCode)
                 {
-                    var jsonSettings = new JsonSerializerSettings
+                    var content = await response.Content.ReadAsStringAsync();
+                    var apiResponse = JsonConvert.DeserializeObject<ApiListDataResponse<ArticleDetail>>(content);
+
+                    if (apiResponse != null && apiResponse.Success && apiResponse.Data != null)
                     {
-                        DateFormatHandling = DateFormatHandling.IsoDateFormat,
-                        DateTimeZoneHandling = DateTimeZoneHandling.Local,
-                        DateParseHandling = DateParseHandling.DateTime
-                    };
-                    
-                    var articles = JsonConvert.DeserializeObject<List<ArticleDetail>>(
-                        apiResponse.Data.ToString(), jsonSettings);
+                        articles = apiResponse.Data;
+                    }
                     
                     // Get code shares by user ID
                     var codeShareResponse = await client.GetAsync($"{_apiUrl}/api/CodeShares/getbyuserid?userId={userId}");
-                    List<CodeShareViewModel> codeShares = new List<CodeShareViewModel>();
                     
                     if (codeShareResponse.IsSuccessStatusCode)
                     {
                         var codeShareContent = await codeShareResponse.Content.ReadAsStringAsync();
-                        var codeShareApiResponse = JsonConvert.DeserializeObject<ApiResponse>(codeShareContent);
+                        var codeShareApiResponse = JsonConvert.DeserializeObject<ApiListDataResponse<CodeShareViewModel>>(codeShareContent);
                         
-                        if (codeShareApiResponse.Success)
+                        if (codeShareApiResponse != null && codeShareApiResponse.Success && codeShareApiResponse.Data != null)
                         {
-                            codeShares = JsonConvert.DeserializeObject<List<CodeShareViewModel>>(
-                                codeShareApiResponse.Data.ToString(), jsonSettings);
+                            codeShares = codeShareApiResponse.Data;
                         }
                     }
                     
@@ -80,14 +76,22 @@ namespace SosyalMedya_Web.Controllers
                     
                     return Json(analysis);
                 }
+                
+                return Json(new { Error = "Failed to analyze user interests", Message = "API veri alınamadı" });
             }
-            
-            return Json(new { Error = "Failed to analyze user interests" });
+            catch (Exception ex)
+            {
+                return Json(new { Error = "Analysis failed", Message = ex.Message });
+            }
         }
 
         private List<KeyValuePair<string, int>> GetTopTopics(List<ArticleDetail> articles)
         {
+            if (articles == null || !articles.Any())
+                return new List<KeyValuePair<string, int>>();
+                
             return articles
+                .Where(a => !string.IsNullOrEmpty(a.TopicTitle))
                 .GroupBy(a => a.TopicTitle)
                 .Select(g => new KeyValuePair<string, int>(g.Key, g.Count()))
                 .OrderByDescending(x => x.Value)
@@ -97,6 +101,9 @@ namespace SosyalMedya_Web.Controllers
 
         private List<KeyValuePair<string, int>> GetTopCodeTags(List<CodeShareViewModel> codeShares)
         {
+            if (codeShares == null || !codeShares.Any())
+                return new List<KeyValuePair<string, int>>();
+                
             var tagCounts = new Dictionary<string, int>();
             
             foreach (var codeShare in codeShares)
@@ -106,10 +113,13 @@ namespace SosyalMedya_Web.Controllers
                     var tags = codeShare.Tags.Split(',').Select(t => t.Trim());
                     foreach (var tag in tags)
                     {
-                        if (tagCounts.ContainsKey(tag))
-                            tagCounts[tag]++;
-                        else
-                            tagCounts[tag] = 1;
+                        if (!string.IsNullOrEmpty(tag))
+                        {
+                            if (tagCounts.ContainsKey(tag))
+                                tagCounts[tag]++;
+                            else
+                                tagCounts[tag] = 1;
+                        }
                     }
                 }
             }
@@ -122,6 +132,9 @@ namespace SosyalMedya_Web.Controllers
 
         private List<KeyValuePair<string, int>> GetTopLanguages(List<CodeShareViewModel> codeShares)
         {
+            if (codeShares == null || !codeShares.Any())
+                return new List<KeyValuePair<string, int>>();
+                
             return codeShares
                 .Where(c => !string.IsNullOrEmpty(c.Language))
                 .GroupBy(c => c.Language)
@@ -133,71 +146,64 @@ namespace SosyalMedya_Web.Controllers
 
         private string GetActivitySummary(List<ArticleDetail> articles, List<CodeShareViewModel> codeShares)
         {
+            if ((articles == null || !articles.Any()) && (codeShares == null || !codeShares.Any()))
+                return "Henüz yeterli veri bulunmuyor.";
+                
             var allItems = new List<Tuple<DateTime, string>>();
             
-            foreach (var article in articles)
+            if (articles != null)
             {
-                try
-                {
-                    DateTime articleDate;
-                    
-                    // Try to interpret the SharingDate as a DateTime
-                    if (article.SharingDate != null)
-                    {
-                        if (DateTime.TryParse(article.SharingDate.ToString(), out articleDate))
-                        {
-                            allItems.Add(new Tuple<DateTime, string>(articleDate, "post"));
-                        }
-                        else
-                        {
-                            // Use current date if parsing fails
-                            allItems.Add(new Tuple<DateTime, string>(DateTime.Now, "post"));
-                        }
-                    }
-                    else
-                    {
-                        // Use current date if SharingDate is null
-                        allItems.Add(new Tuple<DateTime, string>(DateTime.Now, "post"));
-                    }
-                }
-                catch
-                {
-                    // Use current date if any exception occurs
-                    allItems.Add(new Tuple<DateTime, string>(DateTime.Now, "post"));
-                }
-            }
-            
-            foreach (var codeShare in codeShares)
-            {
-                try
-                {
-                    // Try to use SharingDate directly
-                    allItems.Add(new Tuple<DateTime, string>(codeShare.SharingDate, "code"));
-                }
-                catch
+                foreach (var article in articles)
                 {
                     try
                     {
-                        DateTime codeShareDate;
-                        // Try to parse SharingDate as a string
-                        if (codeShare.SharingDate != null && 
-                            DateTime.TryParse(codeShare.SharingDate.ToString(), out codeShareDate))
+                        DateTime articleDate;
+                        
+                        // Try to interpret the SharingDate as a DateTime
+                        if (article.SharingDate != null)
                         {
-                            allItems.Add(new Tuple<DateTime, string>(codeShareDate, "code"));
+                            if (DateTime.TryParse(article.SharingDate.ToString(), out articleDate))
+                            {
+                                allItems.Add(new Tuple<DateTime, string>(articleDate, "post"));
+                            }
+                            else
+                            {
+                                // Use current date if parsing fails
+                                allItems.Add(new Tuple<DateTime, string>(DateTime.Now.AddDays(-7), "post"));
+                            }
                         }
                         else
                         {
-                            // Use current date if parsing fails
-                            allItems.Add(new Tuple<DateTime, string>(DateTime.Now, "code"));
+                            // Use current date if SharingDate is null
+                            allItems.Add(new Tuple<DateTime, string>(DateTime.Now.AddDays(-7), "post"));
                         }
                     }
                     catch
                     {
                         // Use current date if any exception occurs
-                        allItems.Add(new Tuple<DateTime, string>(DateTime.Now, "code"));
+                        allItems.Add(new Tuple<DateTime, string>(DateTime.Now.AddDays(-7), "post"));
                     }
                 }
             }
+            
+            if (codeShares != null)
+            {
+                foreach (var codeShare in codeShares)
+                {
+                    try
+                    {
+                        allItems.Add(new Tuple<DateTime, string>(codeShare.SharingDate, "code"));
+                    }
+                    catch
+                    {
+                        // Use current date if any exception occurs
+                        allItems.Add(new Tuple<DateTime, string>(DateTime.Now.AddDays(-7), "code"));
+                    }
+                }
+            }
+
+            if (!allItems.Any())
+                return "Henüz yeterli paylaşım bulunmuyor.";
 
             // Sort by date
             allItems = allItems.OrderByDescending(x => x.Item1).ToList();
@@ -208,9 +214,8 @@ namespace SosyalMedya_Web.Controllers
             
             if (allItems.Any())
             {
-                var monthsSpan = (DateTime.Now - allItems.Min(x => x.Item1)).TotalDays / 30;
-                if (monthsSpan > 0)
-                    itemsPerMonth = (int)(allItems.Count / monthsSpan);
+                var monthsSpan = Math.Max(1, (DateTime.Now - allItems.Min(x => x.Item1)).TotalDays / 30);
+                itemsPerMonth = (int)(allItems.Count / monthsSpan);
             }
             
             if (itemsPerMonth >= 10)
@@ -223,7 +228,8 @@ namespace SosyalMedya_Web.Controllers
                 activityLevel = "Az aktif";
             
             // Calculate code to post ratio
-            var codeRatio = allItems.Count > 0 ? (double)codeShares.Count / allItems.Count : 0;
+            int codeCount = allItems.Count(x => x.Item2 == "code");
+            var codeRatio = allItems.Count > 0 ? (double)codeCount / allItems.Count : 0;
             string focusArea;
             
             if (codeRatio >= 0.7)
@@ -233,7 +239,7 @@ namespace SosyalMedya_Web.Controllers
             else
                 focusArea = "Ağırlıklı içerik paylaşımına odaklı";
             
-            return $"{activityLevel}, {focusArea}, son {Math.Min(allItems.Count, 30)} günde toplam {allItems.Count} paylaşım.";
+            return $"{activityLevel}, {focusArea}, toplam {allItems.Count} paylaşım.";
         }
     }
 } 

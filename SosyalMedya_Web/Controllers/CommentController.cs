@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using SosyalMedya_Web.Models;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -11,10 +12,14 @@ namespace SosyalMedya_Web.Controllers
     public class CommentController : Controller
     {
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IConfiguration _configuration;
+        private readonly string _apiUrl;
 
-        public CommentController(IHttpClientFactory httpClientFactory)
+        public CommentController(IHttpClientFactory httpClientFactory, IConfiguration configuration)
         {
             _httpClientFactory = httpClientFactory;
+            _configuration = configuration;
+            _apiUrl = _configuration["ApiUrl"] ?? "https://localhost:5190";
         }
 
         [Authorize(Roles = "admin,user")]
@@ -38,8 +43,9 @@ namespace SosyalMedya_Web.Controllers
                 }
 
                 // Yorum nesnesini oluştur
-                var commentToAdd = new
+                var commentToAdd = new 
                 {
+                    Id = 0, // API expects this field
                     ArticleId = comment.ArticleId,
                     UserId = userId.Value,
                     CommentText = comment.CommentText.Trim(),
@@ -58,7 +64,7 @@ namespace SosyalMedya_Web.Controllers
                 }
 
                 httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-                var responseMessage = await httpClient.PostAsync("https://localhost:5190/api/Comments/add", content);
+                var responseMessage = await httpClient.PostAsync($"{_apiUrl}/api/Comments/add", content);
                 var responseContent = await responseMessage.Content.ReadAsStringAsync();
 
                 if (responseMessage.IsSuccessStatusCode)
@@ -74,9 +80,24 @@ namespace SosyalMedya_Web.Controllers
                     });
                 }
                 
+                string errorMessage = "Yorum eklenirken bir hata oluştu.";
+                try 
+                {
+                    var responseObj = JsonConvert.DeserializeObject<JObject>(responseContent);
+                    if (responseObj != null && responseObj["message"] != null)
+                    {
+                        errorMessage = responseObj["message"].ToString();
+                    }
+                }
+                catch 
+                {
+                    // If parsing fails, use the raw response content
+                    errorMessage = "Yorum eklenirken bir hata oluştu: " + responseContent;
+                }
+                
                 return Json(new { 
                     success = false, 
-                    message = "Yorum eklenirken bir hata oluştu: " + responseContent 
+                    message = errorMessage 
                 });
             }
             catch (Exception ex)
@@ -116,12 +137,12 @@ namespace SosyalMedya_Web.Controllers
                 httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
                 
                 // Yorumu silme işlemini gerçekleştir
-                var responseMessage = await httpClient.DeleteAsync($"https://localhost:5190/api/Comments/delete?id={id}");
+                var responseMessage = await httpClient.DeleteAsync($"{_apiUrl}/api/Comments/delete?id={id}");
                 
                 if (responseMessage.IsSuccessStatusCode)
                 {
                     // Silme işlemi başarılı olduktan sonra cache'i temizle
-                    var clearCacheResponse = await httpClient.PostAsync("https://localhost:5190/api/Comments/clearcache", null);
+                    var clearCacheResponse = await httpClient.PostAsync($"{_apiUrl}/api/Comments/clearcache", null);
                     
                     return Json(new { 
                         success = true, 
@@ -146,7 +167,7 @@ namespace SosyalMedya_Web.Controllers
             int userId = HttpContext.Session.GetInt32("UserId") ?? 0;
             ViewData["MyArticle"] = HttpContext.Session.GetInt32("MyArticle");
             ViewData["UserId"] = userId;
-            var responseMessage = await _httpClientFactory.CreateClient().GetAsync("https://localhost:5190/api/Articles/getarticlewithdetailsbyuserid?id=" + userId);
+            var responseMessage = await _httpClientFactory.CreateClient().GetAsync($"{_apiUrl}/api/Articles/getarticlewithdetailsbyuserid?id={userId}");
             if (responseMessage.IsSuccessStatusCode)
             {
                 var jsonResponse = await responseMessage.Content.ReadAsStringAsync();

@@ -740,80 +740,154 @@
             
             // Yapay zeka analizi yükle
             function loadAIAnalysis() {
+                const container = document.getElementById('aiAnalysis');
+                container.innerHTML = '<div class="alert alert-info">Yapay zeka analizi yükleniyor...</div>';
+                
                 fetch(`/AI/AnalyzeUserInterests?userId=${@UserId}`)
                     .then(response => response.json())
                     .then(data => {
-                        const container = document.getElementById('aiAnalysis');
-                        
                         if (data.error) {
-                            container.innerHTML = '';
+                            console.error('AI Analysis error:', data.message || data.error);
+                            container.innerHTML = `<div class="alert alert-warning">
+                                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                Yapay zeka analizi şu anda kullanılamıyor.
+                                <br>
+                                <small>${data.message || 'Sunucu hatası oluştu'}</small>
+                            </div>`;
+                            return;
+                        }
+                        
+                        // ActivitySummary yoksa veya veri ana alanları yoksa hata göster
+                        if (!data.activitySummary || (!data.topTopics && !data.topLanguages && !data.topCodeTags)) {
+                            container.innerHTML = `<div class="alert alert-warning">
+                                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                Yapay zeka analizi oluşturulamadı. Yeterli veri bulunamadı.
+                            </div>`;
                             return;
                         }
                         
                         let html = `
-                            <div class="alert alert-info mt-3">
-                                <h5><i class="bi bi-robot"></i> Yapay Zeka Profil Analizi</h5>
-                                <p>${data.activitySummary}</p>
-                                
-                                <div class="row">
-                                    <div class="col-md-4">
-                                        <h6>En Çok Kullanılan Konular</h6>
-                                        <ul class="list-group">
+                            <div class="card shadow-sm mb-4">
+                                <div class="card-header bg-primary text-white">
+                                    <h5 class="mb-0"><i class="bi bi-robot"></i> Yapay Zeka Profil Analizi</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="alert alert-info">
+                                        <i class="bi bi-info-circle"></i> ${data.activitySummary}
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="card h-100">
+                                                <div class="card-header">
+                                                    <h6 class="mb-0"><i class="bi bi-bookmark"></i> En Çok Kullanılan Konular</h6>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div class="list-group list-group-flush">
                         `;
                         
                         if (data.topTopics && data.topTopics.length > 0) {
                             data.topTopics.forEach(topic => {
-                                html += `<li class="list-group-item d-flex justify-content-between align-items-center">
-                                    ${topic.key}
-                                    <span class="badge bg-primary rounded-pill">${topic.value}</span>
-                                </li>`;
+                                // Ensure totalPosts is defined and positive to avoid NaN or Infinity
+                                const totalPosts = data.totalPosts && data.totalPosts > 0 ? data.totalPosts : 1;
+                                const percentage = (topic.value / totalPosts * 100).toFixed(1);
+                                html += `
+                                    <div class="list-group-item">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span>${topic.key}</span>
+                                            <span class="badge bg-primary">${topic.value}</span>
+                                        </div>
+                                        <div class="progress mt-1" style="height: 5px;">
+                                            <div class="progress-bar" role="progressbar" style="width: ${percentage}%"></div>
+                                        </div>
+                                    </div>`;
                             });
                         } else {
-                            html += `<li class="list-group-item">Henüz yeterli veri yok</li>`;
+                            html += `<div class="list-group-item text-muted">Henüz yeterli veri yok</div>`;
                         }
                         
                         html += `
-                                        </ul>
-                                    </div>
-                                    
-                                    <div class="col-md-4">
-                                        <h6>En Çok Kullanılan Programlama Dilleri</h6>
-                                        <ul class="list-group">
-                        `;
-                        
-                        if (data.topLanguages && data.topLanguages.length > 0) {
-                            data.topLanguages.forEach(lang => {
-                                html += `<li class="list-group-item d-flex justify-content-between align-items-center">
-                                    ${lang.key}
-                                    <span class="badge bg-success rounded-pill">${lang.value}</span>
-                                </li>`;
-                            });
-                        } else {
-                            html += `<li class="list-group-item">Henüz yeterli veri yok</li>`;
-                        }
-                        
-                        html += `
-                                        </ul>
-                                    </div>
-                                    
-                                    <div class="col-md-4">
-                                        <h6>En Çok Kullanılan Kod Etiketleri</h6>
-                                        <ul class="list-group">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-md-4">
+                                            <div class="card h-100">
+                                                <div class="card-header">
+                                                    <h6 class="mb-0"><i class="bi bi-code-square"></i> En Çok Kullanılan Teknolojiler</h6>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div class="list-group list-group-flush">
                         `;
                         
                         if (data.topCodeTags && data.topCodeTags.length > 0) {
                             data.topCodeTags.forEach(tag => {
-                                html += `<li class="list-group-item d-flex justify-content-between align-items-center">
-                                    ${tag.key}
-                                    <span class="badge bg-info rounded-pill">${tag.value}</span>
-                                </li>`;
+                                // Ensure totalCodeShares is defined and positive to avoid NaN or Infinity
+                                const totalCodeShares = data.totalCodeShares && data.totalCodeShares > 0 ? data.totalCodeShares : 1;
+                                const percentage = (tag.value / totalCodeShares * 100).toFixed(1);
+                                html += `
+                                    <div class="list-group-item">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span>${tag.key}</span>
+                                            <span class="badge bg-success">${tag.value}</span>
+                                        </div>
+                                        <div class="progress mt-1" style="height: 5px;">
+                                            <div class="progress-bar bg-success" role="progressbar" style="width: ${percentage}%"></div>
+                                        </div>
+                                    </div>`;
                             });
                         } else {
-                            html += `<li class="list-group-item">Henüz yeterli veri yok</li>`;
+                            html += `<div class="list-group-item text-muted">Henüz yeterli veri yok</div>`;
                         }
                         
                         html += `
-                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-md-4">
+                                            <div class="card h-100">
+                                                <div class="card-header">
+                                                    <h6 class="mb-0"><i class="bi bi-code"></i> En Çok Kullanılan Diller</h6>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div class="list-group list-group-flush">
+                        `;
+                        
+                        if (data.topLanguages && data.topLanguages.length > 0) {
+                            data.topLanguages.forEach(lang => {
+                                // Ensure totalCodeShares is defined and positive to avoid NaN or Infinity
+                                const totalCodeShares = data.totalCodeShares && data.totalCodeShares > 0 ? data.totalCodeShares : 1;
+                                const percentage = (lang.value / totalCodeShares * 100).toFixed(1);
+                                html += `
+                                    <div class="list-group-item">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span>${lang.key}</span>
+                                            <span class="badge bg-info">${lang.value}</span>
+                                        </div>
+                                        <div class="progress mt-1" style="height: 5px;">
+                                            <div class="progress-bar bg-info" role="progressbar" style="width: ${percentage}%"></div>
+                                        </div>
+                                    </div>`;
+                            });
+                        } else {
+                            html += `<div class="list-group-item text-muted">Henüz yeterli veri yok</div>`;
+                        }
+                        
+                        html += `
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="text-center mt-3">
+                                        <small class="text-muted">
+                                            <i class="bi bi-info-circle"></i> 
+                                            Bu analiz kullanıcının paylaşımları ve etkileşimleri baz alınarak yapay zeka tarafından oluşturulmuştur.
+                                        </small>
                                     </div>
                                 </div>
                             </div>
@@ -822,7 +896,9 @@
                         container.innerHTML = html;
                     })
                     .catch(error => {
-                        document.getElementById('aiAnalysis').innerHTML = '';
+                        console.error('AI Analysis error:', error);
+                        document.getElementById('aiAnalysis').innerHTML = 
+                            '<div class="alert alert-warning"><i class="bi bi-exclamation-triangle-fill me-2"></i>Yapay zeka analizi yüklenirken bir hata oluştu.</div>';
                     });
             }
             

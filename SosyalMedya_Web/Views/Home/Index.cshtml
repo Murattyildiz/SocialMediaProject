@@ -18,7 +18,7 @@
             <button class="btn btn-outline-success float-end mt-2" type="submit">Paylaş</button>
         </form>
     </div>
-    @if (Model != null && Model.Any())
+    @if (Model != null && Model.Count > 0)
     {
         <!-- paylaşılan içerik başlangıç -->
         @foreach (var articleDetail in Model)
@@ -46,13 +46,20 @@
                     <div class="pt-3 ps-2 pe-2">
                         <div class="d-flex justify-content-between align-items-center">
                             @{
-                                var validComments = articleDetail.CommentDetails?.Where(x => x.Id != -1).Count() ?? 0;
+                                // Hata düzeltme 1: lambda'yı önce listeye çevirip sayıyı doğrudan kontrol ediyoruz
+                                var validComments = 0;
+                                if (articleDetail.CommentDetails != null)
+                                {
+                                    var validCommentList = articleDetail.CommentDetails.Where(x => x.Id != -1).ToList();
+                                    validComments = validCommentList.Count;
+                                }
+
                                 if (validComments > 0)
                                 {
                                     <button class="btn btn-outline-primary show-comments-btn" type="button" data-article-id="@articleDetail.Id">
                                         <i class="bi bi-chat-dots"></i> 
                                         Yorumlar (@validComments)
-                        </button>
+                                    </button>
                                 }
                                 else
                                 {
@@ -63,35 +70,44 @@
                         </div>
                         
                         <div class="comments-section mt-3" id="comments-@articleDetail.Id" style="display: none;">
-                            @if (articleDetail.CommentDetails != null && articleDetail.CommentDetails.Any())
+                            @if (articleDetail.CommentDetails != null)
                             {
-                                foreach (var comment in articleDetail.CommentDetails)
+                                // Hata düzeltme 2: lambda ifadesini önce filtreleyip sonra listeye çeviriyoruz
+                                var validCommentList = articleDetail.CommentDetails.Where(x => x.Id != -1).ToList();
+                                if (validCommentList.Count > 0)
                                 {
-                                    <div class="comment mb-3 p-3 border rounded">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <div class="d-flex align-items-center">
-                                                @if (string.IsNullOrEmpty(comment.Image))
-                                                {
-                                                    <img src="https://localhost:5190/images/default.jpg" class="rounded-circle me-2" width="40" height="40" />
-                                                }
-                                                else
-                                                {
-                                                    <img src="https://localhost:5190/@comment.Image" class="rounded-circle me-2" width="40" height="40" />
-                                                }
-                                                <div>
-                                                    <strong>@comment.UserName</strong>
-                                                    <small class="text-muted d-block">@comment.CommentDate.ToString("dd.MM.yyyy HH:mm:ss")</small>
+                                    foreach (var comment in validCommentList)
+                                    {
+                                        <div class="comment mb-3 p-3 border rounded">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div class="d-flex align-items-center">
+                                                    @if (string.IsNullOrEmpty(comment.Image))
+                                                    {
+                                                        <img src="https://localhost:5190/images/default.jpg" class="rounded-circle me-2" width="40" height="40" />
+                                                    }
+                                                    else
+                                                    {
+                                                        <img src="https://localhost:5190/@comment.Image" class="rounded-circle me-2" width="40" height="40" />
+                                                    }
+                                                    <div>
+                                                        <strong>@comment.UserName</strong>
+                                                        <small class="text-muted d-block">@comment.CommentDate</small>
+                                                    </div>
                                                 </div>
+                                                @if (comment.UserId == ViewBag.UserId || User.IsInRole("admin"))
+                                                {
+                                                    <button class="btn btn-sm btn-danger delete-comment" data-comment="@comment.Id" data-bs-toggle="modal" data-bs-target="#deleteCommentModal">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                }
                                             </div>
-                                            @if (comment.UserId == ViewBag.UserId || User.IsInRole("admin"))
-                                            {
-                                                <button class="btn btn-sm btn-danger delete-comment" data-comment="@comment.Id" data-bs-toggle="modal" data-bs-target="#deleteCommentModal">
-                                                    <i class="bi bi-trash"></i>
-                                                </button>
-                                            }
+                                            <p class="mt-2 mb-0">@comment.CommentText</p>
                                         </div>
-                                        <p class="mt-2 mb-0">@comment.CommentText</p>
-                                    </div>
+                                    }
+                                }
+                                else
+                                {
+                                    <p class="text-muted">Henüz yorum yapılmamış.</p>
                                 }
                             }
                             else

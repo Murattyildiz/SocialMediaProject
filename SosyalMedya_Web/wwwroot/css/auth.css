@@ -1,0 +1,207 @@
+/* Auth (Login/Register) sayfaları özel stilleri */
+
+body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    position: relative;
+    height: 100vh;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+video {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    min-width: 100%;
+    min-height: 100%;
+    z-index: -1;
+}
+
+body.auth-page {
+    /* Arka plan videosu zaten body seviyesinde login.css tarafından ayarlanıyor, 
+       burada ek bir body stili gerekirse diye bir sınıf tanımlıyorum. 
+       Login.cshtml'de body'e class="auth-page" eklenebilir. */
+}
+
+#login {
+    background-color: rgba(25, 25, 25, 0.7); /* Koyu yarı saydam arka plan */
+    backdrop-filter: blur(10px); /* Arka planı bulanıklaştır */
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 25px 30px !important;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    max-width: 500px !important;
+}
+
+#login h1 {
+    color: #ffffff !important;
+    font-weight: 300 !important;
+    margin-bottom: 2rem !important;
+    font-size: 1.8rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+#login .input-group {
+    margin-bottom: 1.2rem !important;
+}
+
+#login .input-group-text {
+    background-color: rgba(0, 123, 255, 0.3); /* Mavi tonunda saydam arka plan */
+    border: 1px solid rgba(0, 123, 255, 0.5);
+    color: #ffffff;
+    font-weight: 500;
+    border-right: none; /* Input ile birleşik görünüm */
+    width: 140px; /* Sabit genişlik */
+}
+
+#login .form-control {
+    background-color: rgba(255, 255, 255, 0.05); /* Hafif saydam beyaz */
+    border: 1px solid rgba(0, 123, 255, 0.5);
+    color: #ffffff;
+    border-left: none; /* Span ile birleşik görünüm */
+    transition: background-color 0.3s ease;
+}
+
+#login .form-control::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+#login .form-control:focus {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: rgba(0, 123, 255, 0.8);
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.15);
+    color: #ffffff;
+}
+
+#login .btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+    padding: 10px 30px;
+    font-size: 1.1rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+#login .btn-primary:hover {
+    background-color: #0056b3;
+    border-color: #0056b3;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+}
+
+#login .btn-primary:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+#login .btn-outline-primary {
+    color: #ffffff !important;
+    border-color: rgba(0, 123, 255, 0.6);
+    border-radius: 8px;
+    padding: 8px 20px;
+    transition: all 0.3s ease;
+    margin: 0 5px;
+}
+
+#login .btn-outline-primary:hover {
+    background-color: rgba(0, 123, 255, 0.1);
+    border-color: rgba(0, 123, 255, 0.8);
+    transform: translateY(-2px);
+}
+
+#login form {
+    padding: 20px 15px !important;
+}
+
+#login .mt-3.mb-3 {
+    margin-top: 1rem !important;
+    margin-bottom: 1.5rem !important;
+}
+
+#login input[name="ConfirmPassword"] {
+    border-color: rgba(0, 123, 255, 0.5);
+}
+
+.toast-container {
+    z-index: 9999;
+}
+
+.toast {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 8px;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+}
+
+.toast-header {
+    border-radius: 8px 8px 0 0;
+    padding: 12px 15px;
+}
+
+.toast-body {
+    padding: 15px;
+    font-size: 0.95rem;
+}
+
+@media (max-width: 767px) {
+    #login {
+        width: 90% !important;
+        padding: 15px !important;
+    }
+    
+    #login .input-group-text {
+        width: 120px;
+        font-size: 0.9rem;
+    }
+    
+    #login h1 {
+        font-size: 1.5rem;
+    }
+    
+    .btn {
+        padding: 8px 20px;
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 575px) {
+    #login {
+        width: 95% !important;
+    }
+    
+    #login .input-group {
+        flex-direction: column;
+    }
+    
+    #login .input-group-text {
+        width: 100%;
+        border-radius: 0.25rem 0.25rem 0 0;
+        border-right: 1px solid rgba(0, 123, 255, 0.5);
+        border-bottom: none;
+        text-align: left;
+    }
+    
+    #login .form-control {
+        border-radius: 0 0 0.25rem 0.25rem;
+        border-left: 1px solid rgba(0, 123, 255, 0.5);
+        border-top: none;
+    }
+}
+
+/* Register linki için (eğer login sayfasında varsa veya eklenecekse) */
+#login .register-link {
+    margin-top: 15px;
+    font-size: 0.9rem;
+}
+
+#login .register-link a {
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: underline;
+}
+
+#login .register-link a:hover {
+    color: #ffffff;
+} 

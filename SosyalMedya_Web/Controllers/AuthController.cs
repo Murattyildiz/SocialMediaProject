@@ -30,6 +30,53 @@ namespace SosyalMedya_Web.Controllers
             return View();
         }
 
+        [HttpGet("kayit-ol")]
+        public IActionResult Register()
+        {
+            return View();
+        }
+
+        [HttpPost("RegisterPost")]
+        public async Task<IActionResult> RegisterPost(UserForRegister userForRegister)
+        {
+            if (userForRegister.Password != userForRegister.ConfirmPassword)
+            {
+                TempData["RegisterFail"] = "Şifreler eşleşmiyor!";
+                return RedirectToAction("Register", "Auth");
+            }
+
+            // API'nin beklediği modele dönüştürme için ConfirmPassword'ü kaldırıyoruz
+            var registerModel = new
+            {
+                email = userForRegister.Email,
+                password = userForRegister.Password,
+                firstName = userForRegister.FirstName,
+                lastName = userForRegister.LastName,
+                gender = userForRegister.Gender,
+                phoneNumber = userForRegister.PhoneNumber
+            };
+
+            var httpClient = _httpClientFactory.CreateClient();
+            var jsonRegister = JsonConvert.SerializeObject(registerModel);
+            StringContent content = new StringContent(jsonRegister, Encoding.UTF8, "application/json");
+            var responseMessage = await httpClient.PostAsync($"{_apiUrl}/api/auth/register", content);
+
+            if (responseMessage.IsSuccessStatusCode)
+            {
+                // Başarılı kayıt, giriş sayfasına yönlendir
+                TempData["Success"] = true;
+                TempData["Message"] = "Kayıt işlemi başarılı! Lütfen giriş yapın.";
+                return RedirectToAction("Login", "Auth");
+            }
+            else
+            {
+                string responseContent = await responseMessage.Content.ReadAsStringAsync();
+                var errorResponse = JsonConvert.DeserializeObject<ApiResponse>(responseContent);
+                TempData["RegisterFail"] = errorResponse?.Message ?? "Kayıt işlemi sırasında bir hata oluştu.";
+                return RedirectToAction("Register", "Auth");
+            }
+        }
+
         [HttpPost("LoginPost")]
         public async Task<IActionResult> LoginPost(UserForLogin userForLogin)
         {
