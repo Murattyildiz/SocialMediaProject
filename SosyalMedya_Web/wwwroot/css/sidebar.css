@@ -1,0 +1,290 @@
+/* Modern Sidebar Styles */
+
+/* Container styling */
+#leftSideMenu {
+    transition: all 0.3s ease;
+}
+
+#leftSideMenu .border {
+    background-color: white;
+    border-radius: 20px !important;
+    border: none !important;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08) !important;
+    overflow: hidden;
+    padding: 0 !important;
+}
+
+/* Profile section styling */
+.profile-header {
+    background: linear-gradient(120deg, #4299e1, #2b6cb0);
+    padding: 25px 15px 65px;
+    text-align: center;
+    position: relative;
+}
+
+.profile-header::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 40px;
+    background: white;
+    border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+}
+
+.profile-pic {
+    width: 90px !important;
+    height: 90px !important;
+    border-radius: 50%;
+    border: 4px solid white;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    position: relative;
+    z-index: 2;
+    margin: 0 auto;
+    display: block;
+    object-fit: cover;
+    transform: translateY(40px);
+}
+
+.user-info {
+    padding: 50px 15px 20px;
+    text-align: center;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.user-info h5 {
+    margin: 0;
+    font-weight: 600;
+    color: #2d3748;
+    font-size: 1.2rem;
+}
+
+.user-info p {
+    color: #718096;
+    font-size: 0.9rem;
+    margin: 5px 0 0;
+}
+
+/* User stats styling */
+.user-stats {
+    display: flex;
+    padding: 15px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.stat-box {
+    flex: 1;
+    text-align: center;
+    padding: 10px;
+    position: relative;
+}
+
+.stat-box:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    top: 25%;
+    height: 50%;
+    width: 1px;
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.stat-box i {
+    display: block;
+    font-size: 1.4rem;
+    margin-bottom: 5px;
+    color: #4299e1;
+}
+
+.stat-box .count {
+    font-weight: 700;
+    font-size: 1.2rem;
+    color: #2d3748;
+}
+
+.stat-box .label {
+    font-size: 0.8rem;
+    color: #718096;
+}
+
+/* Navigation styling */
+.side-nav {
+    padding: 15px;
+}
+
+.nav-item {
+    margin-bottom: 10px;
+}
+
+.side-nav-link {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    border-radius: 12px;
+    color: #4a5568;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.side-nav-link:hover {
+    background-color: rgba(66, 153, 225, 0.1);
+    color: #4299e1;
+    transform: translateX(5px);
+}
+
+.side-nav-link.active {
+    background-color: #4299e1;
+    color: white;
+    box-shadow: 0 4px 10px rgba(66, 153, 225, 0.3);
+}
+
+.side-nav-link i {
+    font-size: 1.2rem;
+    margin-right: 10px;
+    min-width: 24px;
+    text-align: center;
+}
+
+.side-nav-link.active i {
+    color: white;
+}
+
+/* Logout button styling */
+.logout-btn {
+    margin: 15px;
+    display: block;
+    text-align: center;
+}
+
+.btn-logout {
+    width: 100%;
+    padding: 12px;
+    border-radius: 12px;
+    background-color: rgba(229, 62, 62, 0.1);
+    color: #e53e3e;
+    border: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-logout:hover {
+    background-color: rgba(229, 62, 62, 0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(229, 62, 62, 0.15);
+}
+
+.btn-logout i {
+    margin-right: 8px;
+}
+
+/* Fix z-index issues */
+.select2-container--open {
+    z-index: 9999 !important;
+}
+
+.modal-backdrop {
+    z-index: 1040 !important;
+}
+
+.modal {
+    z-index: 1050 !important;
+}
+
+.note-editor {
+    z-index: 0 !important;
+}
+
+.popover, 
+.tooltip, 
+.dropdown-menu {
+    z-index: 1060 !important;
+}
+
+/* Select2 improvement */
+.select2-dropdown {
+    z-index: 9999 !important;
+    border: none !important;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1) !important;
+    border-radius: 10px !important;
+    overflow: hidden;
+}
+
+.select2-container--default .select2-results__option--highlighted[aria-selected] {
+    background-color: #4299e1 !important;
+}
+
+/* Additional z-index fixes */
+.note-editor .dropdown-menu {
+    z-index: 1071 !important;
+}
+
+.note-editor .note-dropdown-menu {
+    z-index: 1071 !important;
+}
+
+.select2-container {
+    z-index: 1052 !important;
+}
+
+.select2-container--open .select2-dropdown {
+    z-index: 10000 !important;
+}
+
+.select2-container--open .select2-dropdown--above,
+.select2-container--open .select2-dropdown--below {
+    z-index: 10000 !important;
+}
+
+.select2-search--dropdown {
+    z-index: 10001 !important;
+}
+
+.select2-results {
+    z-index: 10001 !important;
+}
+
+/* Force the editor to stay below dropdowns */
+.note-editor.note-frame {
+    position: relative;
+    z-index: 1 !important;
+}
+
+.note-editor.note-frame .note-editing-area {
+    position: relative;
+    z-index: 1 !important;
+}
+
+/* Improve toolbar styling */
+.note-toolbar {
+    position: relative;
+    z-index: 500 !important;
+    background: white !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+}
+
+.note-toolbar .note-btn-group {
+    position: relative;
+    z-index: 501 !important;
+}
+
+/* Fix modal layering */
+.modal-backdrop {
+    z-index: 1040 !important;
+}
+
+.modal-dialog {
+    z-index: 1050 !important;
+}
+
+/* Additional note-editor fixes */
+.note-editor.note-frame .note-statusbar {
+    z-index: 1 !important;
+}
+
+/* Fix for all dropdown components */
+.dropdown {
+    position: relative;
+    z-index: 1052;
+} 

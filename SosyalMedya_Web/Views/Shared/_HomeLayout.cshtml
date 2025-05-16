@@ -21,6 +21,7 @@
     <link rel="stylesheet" href="~/css/message.css" />
     <link rel="stylesheet" href="~/css/comment.css" />
     <link rel="stylesheet" href="~/css/codeshare.css" />
+    <link rel="stylesheet" href="~/css/sidebar.css" />
     <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.8/dist/sweetalert2.min.css">
@@ -166,21 +167,25 @@
         <header class="py-3 mb-4 border-bottom">
             <div class="container d-flex flex-wrap justify-content-center">
                 <a href="/" class="d-flex align-items-center mb-3 mb-lg-0 me-lg-auto link-body-emphasis text-decoration-none">
+                    <i class="bi bi-people-fill me-2 fs-3"></i>
                     <span class="fs-4">Sosyal Medya</span>
                 </a>
                 <div class="d-flex align-items-center">
-                    <form class="me-3" action="/User/Users" method="get">
-                        <input type="search" name="searchTerm" class="form-control" placeholder="Kullanıcı ara..." aria-label="Search">
+                    <form class="me-3 search-form" action="/User/Users" method="get">
+                        <div class="position-relative">
+                            <i class="bi bi-search position-absolute search-icon"></i>
+                            <input type="search" name="searchTerm" class="form-control" placeholder="Kullanıcı ara..." aria-label="Search">
+                        </div>
                     </form>
                     <div class="dropdown text-end">
                         <a href="#" class="d-block link-body-emphasis text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                             <img src="@ViewData["CurrentUserImage"]" onerror="this.onerror=null; this.src='/images/default.jpg';" alt="mdo" width="32" height="32" class="rounded-circle">
                         </a>
                         <ul class="dropdown-menu text-small">
-                            <li><a class="dropdown-item" href="/profilim">Profilim</a></li>
-                            <li><a class="dropdown-item" href="/hesap-bilgilerim">Hesap Ayarları</a></li>
+                            <li><a class="dropdown-item" href="/profilim"><i class="bi bi-person-circle me-2"></i>Profilim</a></li>
+                            <li><a class="dropdown-item" href="/hesap-bilgilerim"><i class="bi bi-gear-fill me-2"></i>Hesap Ayarları</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item logout-link" href="javascript:void(0)">Çıkış Yap</a></li>
+                            <li><a class="dropdown-item logout-link" href="javascript:void(0)"><i class="bi bi-box-arrow-right me-2"></i>Çıkış Yap</a></li>
                         </ul>
                     </div>
                 </div>
@@ -189,46 +194,70 @@
         <main class="d-flex justify-content-center justify-content-md-between">
             <div id="leftSideMenu" class="sticky-top col-2 justify-content-start h-50 py-1 px-1 text-center">
                 <div class="border border-1 mb-4 mt-3 shadow h-auto">
-                    <a class="d-inline-flex align-items-center link-body-emphasis text-decoration-none mt-2" href="/profilim">
-                        <img src="@ViewData["CurrentUserImage"]" onerror="this.onerror=null; this.src='/images/default.jpg';" class="img-fluid img-thumbnail rounded-circle me-2" width="50" height="50" alt="">
-                    </a>
-                    <h6>@ViewData["CurrentUserName"]</h6>
-                    <div class="align-items-center justify-content-center justify-content-md-between mb-5">
-                        <a href="" class="col-6 border py-2 px-1 mb-5 float-start text-decoration-none"><i class="bi bi-substack me-2"></i>@ViewData["CurrentUserArticleCount"]</a>
-                        @* <a href="" class="col-6 border py-2 px-1 mb-5 float-end text-decoration-none"><i class="bi bi-bell-fill me-2"></i>53</a> *@
+                    <!-- Profile Header with Curved Bottom -->
+                    <div class="profile-header">
+                        <img src="@ViewData["CurrentUserImage"]" onerror="this.onerror=null; this.src='/images/default.jpg';" class="profile-pic" alt="@ViewData["CurrentUserName"]">
+                    </div>
+                    
+                    <!-- User Info Section -->
+                    <div class="user-info">
+                        <h5>@ViewData["CurrentUserName"]</h5>
+                        @if (ViewData["CurrentUserName"] != null)
+                        {
+                            <p>@@@(ViewData["CurrentUserName"].ToString().ToLower().Replace(" ", ""))</p>
+                        }
+                        else
+                        {
+                            <p>@@@("user")</p>
+                        }
+                    </div>
+                    
+                    <!-- User Stats Section -->
+                    <div class="user-stats">
+                        <div class="stat-box">
+                            <i class="bi bi-file-text"></i>
+                            <div class="count">@ViewData["CurrentUserArticleCount"]</div>
+                            <div class="label">Yazılar</div>
+                        </div>
                         @await Component.InvokeAsync("_NotSeenComment")
                     </div>
+                    
+                    <!-- Navigation Section -->
+                    <div class="side-nav">
+                        <div class="nav-item">
+                            <a href="/" class="side-nav-link home-link">
+                                <i class="bi bi-house-fill"></i> Ana Sayfa
+                            </a>
+                        </div>
+                        <div class="nav-item">
+                            <a href="/profilim" class="side-nav-link profile-link">
+                                <i class="bi bi-person-circle"></i> Profilim
+                            </a>
+                        </div>
+                        <div class="nav-item">
+                            <a href="/mesajlar" class="side-nav-link messages-link">
+                                <i class="bi bi-chat-dots"></i> Mesajlar
+                            </a>
+                        </div>
+                        <div class="nav-item">
+                            <a href="/CodeShare" class="side-nav-link code-link">
+                                <i class="bi bi-code-square"></i> Kod Paylaşımları
+                            </a>
+                        </div>
+                        <div class="nav-item">
+                            <a href="/hesap-bilgilerim" class="side-nav-link settings-link">
+                                <i class="bi bi-sliders2-vertical"></i> Ayarlar
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Logout Button -->
+                    <div class="logout-btn">
+                        <button class="btn-logout logout-link" type="button">
+                            <i class="bi bi-box-arrow-right"></i> Çıkış Yap
+                        </button>
+                    </div>
                 </div>
-                <ul class="nav menu d-inline col-12 col-md-auto mb-2 align-items-center justify-content-center mb-md-0">
-                    <li class="nav-link text-black">
-                        <a href="/" class="text-decoration-none">
-                            <i class="bi bi-house-fill me-2"></i>Ana Sayfa
-                        </a>
-                    </li>
-                    <li class="nav-link text-black my-2">
-                        <a href="/profilim" class="text-decoration-none">
-                            <i class="bi bi-person-circle me-2"></i>Profilim
-                        </a>
-                    </li>
-                    <li class="nav-link text-black">
-                        <a href="/mesajlar" class="text-decoration-none">
-                            <i class="bi bi-chat-dots me-2"></i>Mesajlar
-                        </a>
-                    </li>
-                    <li class="nav-link text-black">
-                        <a href="/CodeShare" class="text-decoration-none">
-                            <i class="bi bi-code-square me-2"></i>Kod Paylaşımları
-                        </a>
-                    </li>
-                    <li class="nav-link text-black">
-                        <a href="/hesap-bilgilerim" class="text-decoration-none">
-                            <i class="bi bi-sliders2-vertical me-2"></i>Ayarlar
-                        </a>
-                    </li>
-
-                    <a class="btn btn-outline-danger mt-3 logout-link" href="javascript:void(0)"><i class="bi bi-box-arrow-in-right me-2"></i>Çıkış Yap</a>
-
-                </ul>
             </div>
             @RenderBody()
         </main>
@@ -292,7 +321,12 @@
     }
     <script>
         $(document).ready(function () {
-            $('.js-example-basic-single').select2();
+            $('.js-example-basic-single').select2({
+                placeholder: "Konu seçin...",
+                allowClear: true,
+                width: '100%',
+                theme: "classic"
+            });
 
             // Çıkış yap butonları için olay dinleyicisi
             $(".logout-link").on("click", function () {
@@ -312,12 +346,10 @@
                 window.location.href = "/giris-yap";
             });
 
-            $(".nav-link").on("click", function () {
-                let activeMenuText = $(this).find("a").text().trim();
+            // Active menu handling for new sidebar
+            $(".side-nav-link").on("click", function () {
+                let activeMenuText = $(this).text().trim();
                 document.cookie = `activeMenu=${activeMenuText}`;
-
-                $(".nav-link").removeClass("border border-1 border-primary");
-                $(this).addClass("border border-1 border-primary");
             });
 
             function getCookie(cname) {
@@ -336,24 +368,40 @@
                 return "";
             }
 
-            function setCookie(cname, exminutes) {
-                var d = new Date();
-                d.setTime(d.getTime() + (exminutes * 60 * 1000));
-                var expiress = "expires=" + d.toGMTString();
-                document.cookie = cname + "=" + getCookie("activeMenu") + ";" + expiress + ";path=/";
-            }
-
-            $(".nav-link").each(function () {
+            // Set active menu
+            function setActiveMenu() {
+                // First check cookie
                 if (getCookie("activeMenu")) {
-                    var CookieOne = getCookie("activeMenu");
-                    if ($(this).find("a").text().trim() == CookieOne) {
-                        $(this).addClass("border border-1 border-primary");
-                    }
+                    var activeMenu = getCookie("activeMenu");
+                    $(".side-nav-link").each(function() {
+                        if ($(this).text().trim() === activeMenu) {
+                            $(this).addClass("active");
+                        }
+                    });
                 } else {
-                    if ($(this).find("a").text().trim() == "Ana Sayfa") {
-                        $(this).addClass("border border-1 border-primary");
+                    // Default to current page based on URL
+                    var path = window.location.pathname;
+                    
+                    if (path === "/") {
+                        $(".home-link").addClass("active");
+                    } else if (path.includes("/profilim")) {
+                        $(".profile-link").addClass("active");
+                    } else if (path.includes("/mesajlar")) {
+                        $(".messages-link").addClass("active");
+                    } else if (path.includes("/CodeShare")) {
+                        $(".code-link").addClass("active");
+                    } else if (path.includes("/hesap-bilgilerim")) {
+                        $(".settings-link").addClass("active");
                     }
                 }
+            }
+            
+            // Call setActiveMenu on page load
+            setActiveMenu();
+            
+            // Fix z-index issues for Select2 and modal windows
+            $('.js-example-basic-single').on('select2:open', function() {
+                $('.select2-dropdown').css('z-index', 9999);
             });
         });
     </script>

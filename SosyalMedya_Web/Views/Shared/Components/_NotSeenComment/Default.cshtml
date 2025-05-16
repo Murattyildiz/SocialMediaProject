@@ -1,2 +1,6 @@
 ﻿@model int
-<a href="/notification" class="col-6 border py-1 px-1 mb-5 float-end text-decoration-none notification"><i class="bi bi-bell-fill me-2"></i>@Model</a>
+<a href="/notification" class="stat-box notification-box" style="text-decoration: none;">
+    <i class="bi bi-bell-fill"></i>
+    <div class="count">@Model</div>
+    <div class="label">Bildirim</div>
+</a>
