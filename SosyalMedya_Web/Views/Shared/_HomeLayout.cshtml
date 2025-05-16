@@ -24,6 +24,7 @@
     <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.8/dist/sweetalert2.min.css">
+    @RenderSection("Styles", required: false)
     <style>
         /* Özel büyük boyutlu UI stilleri */
         html, body {
@@ -35,6 +36,33 @@
 
         body {
             font-size: 1.1rem;
+        }
+
+        /* ChatBot Sabit Buton Stili */
+        .floating-chatbot {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 1050;
+        }
+
+        .floating-chatbot a {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+
+        .floating-chatbot a:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+        }
+
+        .floating-chatbot i {
+            font-size: 24px;
         }
 
         /* Başlık çubuğu */
@@ -204,6 +232,14 @@
             </div>
             @RenderBody()
         </main>
+        
+        <!-- Sabit ChatBot Butonu -->
+        <div class="floating-chatbot">
+            <a href="/ChatBot" class="btn btn-primary rounded-circle" title="Bingöl Üniversitesi ChatBot">
+                <i class="bi bi-robot"></i>
+            </a>
+        </div>
+        
     </div>
     <!-- First Toast -->
     <div class="toast-container position-top end-0 top-0 p-3">

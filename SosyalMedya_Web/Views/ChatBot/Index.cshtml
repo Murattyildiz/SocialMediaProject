@@ -1,0 +1,272 @@
+@{
+    Layout = "~/Views/Shared/_HomeLayout.cshtml";
+    ViewData["Title"] = "ChatBot";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">Bingöl Üniversitesi ChatBot</h4>
+                    <button class="btn btn-sm btn-light" id="clear-chat">Temizle</button>
+                </div>
+                <div class="card-body">
+                    <div id="chat-messages" class="chat-messages mb-3" style="height: 450px; overflow-y: auto;">
+                        <div class="message bot-message">
+                            <div class="message-content">
+                                <h5>Merhaba! Size nasıl yardımcı olabilirim?</h5>
+                                <p>Şunlar hakkında soru sorabilirsiniz:</p>
+                                <ul class="mb-0">
+                                    <li>Hava durumu</li>
+                                    <li>Güncel haberler</li>
+                                    <li>Yemek menüsü</li>
+                                    <li>Duyurular</li>
+                                    <li>Akademik takvim</li>
+                                    <li>Genel üniversite bilgileri</li>
+                                    <li>Genel bilgi soruları (örn: "Konyaspor ne zaman kuruldu?")</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <input type="text" id="message-input" class="form-control" placeholder="Mesajınızı yazın...">
+                        <button class="btn btn-primary" id="send-button">Gönder</button>
+                    </div>
+                </div>
+                <div class="card-footer bg-light text-center">
+                    <div class="suggestion-buttons mb-2">
+                        <button class="btn btn-sm btn-outline-secondary mx-1">Hava durumu</button>
+                        <button class="btn btn-sm btn-outline-secondary mx-1">Günün yemek menüsü</button>
+                        <button class="btn btn-sm btn-outline-secondary mx-1">Son duyurular</button>
+                        <button class="btn btn-sm btn-outline-secondary mx-1">Son haberler</button>
+                    </div>
+                    <small class="text-muted">Örnek: "Bugünün yemek menüsü nedir?" veya "Bingöl'de hava nasıl?"</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .chat-messages {
+            border: 1px solid #dee2e6;
+            border-radius: 0.25rem;
+            padding: 1rem;
+            background-color: #f8f9fa;
+        }
+
+        .message {
+            margin-bottom: 1rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-message {
+            align-items: flex-end;
+        }
+
+        .bot-message {
+            align-items: flex-start;
+        }
+
+        .message-content {
+            max-width: 80%;
+            padding: 0.75rem;
+            border-radius: 1rem;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .user-message .message-content {
+            background-color: #007bff;
+            color: white;
+            border-bottom-right-radius: 0.25rem;
+        }
+
+        .bot-message .message-content {
+            background-color: white;
+            border-bottom-left-radius: 0.25rem;
+        }
+
+        /* Yanıtlarda satır sonları düzgün gösterme */
+        .bot-message .message-content pre {
+            margin-bottom: 0.5rem;
+            white-space: pre-wrap;
+            font-family: inherit;
+        }
+
+        .loader {
+            display: inline-block;
+            width: 50px;
+            text-align: center;
+        }
+        
+        .loader > div {
+            width: 8px;
+            height: 8px;
+            background-color: #777;
+            border-radius: 100%;
+            display: inline-block;
+            animation: bounce-animation 1.4s infinite ease-in-out both;
+        }
+        
+        .loader .dot1 {
+            animation-delay: -0.32s;
+        }
+        
+        .loader .dot2 {
+            animation-delay: -0.16s;
+        }
+        
+        @* Razor'da @keyframes kullanımı için özel sözdizimi *@
+        @@keyframes bounce-animation {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1.0); }
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            const chatMessages = $('#chat-messages');
+            const messageInput = $('#message-input');
+            const sendButton = $('#send-button');
+            const clearButton = $('#clear-chat');
+            const suggestionButtons = $('.suggestion-buttons button');
+            
+            let isWaitingResponse = false;
+
+            function formatBotResponse(text) {
+                try {
+                    // API'den gelen yanıtlar tırnak işaretleri içinde olabilir
+                    if (text.startsWith('"') && text.endsWith('"')) {
+                        text = text.substring(1, text.length - 1);
+                    }
+                    
+                    // Escape karakterlerini düzelt
+                    text = text.replace(/\\n/g, '\n')
+                             .replace(/\\"/g, '"')
+                             .replace(/\\\\/g, '\\');
+                    
+                    return '<pre>' + text + '</pre>';
+                } catch (e) {
+                    console.error("Yanıt formatlanırken hata:", e);
+                    return '<pre>' + text + '</pre>';
+                }
+            }
+
+            function addMessage(message, isUser = false) {
+                const messageDiv = $('<div>').addClass('message').addClass(isUser ? 'user-message' : 'bot-message');
+                const messageContent = $('<div>').addClass('message-content');
+                
+                if (isUser) {
+                    messageContent.text(message);
+                } else {
+                    // Bot mesajlarını formatla
+                    messageContent.html(formatBotResponse(message));
+                }
+                
+                messageDiv.append(messageContent);
+                chatMessages.append(messageDiv);
+                chatMessages.scrollTop(chatMessages[0].scrollHeight);
+            }
+            
+            function addLoadingIndicator() {
+                const loadingDiv = $('<div>').addClass('message bot-message').attr('id', 'loading-message');
+                const loadingContent = $('<div>').addClass('message-content');
+                const loader = $('<div>').addClass('loader');
+                
+                loader.append($('<div>').addClass('dot1'));
+                loader.append($('<div>').addClass('dot2'));
+                loader.append($('<div>').addClass('dot3'));
+                
+                loadingContent.append(loader);
+                loadingDiv.append(loadingContent);
+                chatMessages.append(loadingDiv);
+                chatMessages.scrollTop(chatMessages[0].scrollHeight);
+            }
+            
+            function removeLoadingIndicator() {
+                $('#loading-message').remove();
+            }
+
+            function sendMessage() {
+                const message = messageInput.val().trim();
+                if (message && !isWaitingResponse) {
+                    addMessage(message, true);
+                    messageInput.val('');
+                    isWaitingResponse = true;
+                    
+                    addLoadingIndicator();
+
+                    $.ajax({
+                        url: '/ChatBot/SendMessage',
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify(message),
+                        success: function(response) {
+                            removeLoadingIndicator();
+                            addMessage(response);
+                            isWaitingResponse = false;
+                        },
+                        error: function(xhr, status, error) {
+                            removeLoadingIndicator();
+                            console.error("Hata detayı:", xhr.status, xhr.responseText);
+                            let errorMsg = 'Üzgünüm, bir hata oluştu. ';
+                            
+                            if (xhr.status === 404) {
+                                errorMsg += 'API bulunamadı. Lütfen API servisinin çalıştığından emin olun.';
+                            } else if (xhr.status === 500) {
+                                errorMsg += 'Sunucu hatası: ' + xhr.responseText;
+                            } else {
+                                errorMsg += 'Lütfen tekrar deneyin.';
+                            }
+                            
+                            addMessage(errorMsg);
+                            isWaitingResponse = false;
+                        }
+                    });
+                }
+            }
+            
+            clearButton.click(function() {
+                chatMessages.empty();
+                
+                // Karşılama mesajını tekrar ekle
+                const welcomeDiv = $('<div>').addClass('message bot-message');
+                const welcomeContent = $('<div>').addClass('message-content');
+                welcomeContent.html(`
+                    <h5>Merhaba! Size nasıl yardımcı olabilirim?</h5>
+                    <p>Şunlar hakkında soru sorabilirsiniz:</p>
+                    <ul class="mb-0">
+                        <li>Hava durumu</li>
+                        <li>Güncel haberler</li>
+                        <li>Yemek menüsü</li>
+                        <li>Duyurular</li>
+                        <li>Akademik takvim</li>
+                        <li>Genel üniversite bilgileri</li>
+                        <li>Genel bilgi soruları (örn: "Konyaspor ne zaman kuruldu?")</li>
+                    </ul>
+                `);
+                welcomeDiv.append(welcomeContent);
+                chatMessages.append(welcomeDiv);
+            });
+
+            sendButton.click(sendMessage);
+            messageInput.keypress(function(e) {
+                if (e.which === 13) {
+                    sendMessage();
+                }
+            });
+            
+            // Öneri butonlarına tıklama olaylarını ekle
+            suggestionButtons.click(function() {
+                const buttonText = $(this).text();
+                messageInput.val(buttonText);
+                sendMessage();
+            });
+        });
+    </script>
+} 

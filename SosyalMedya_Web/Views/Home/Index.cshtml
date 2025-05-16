@@ -1,6 +1,6 @@
 ﻿@model List<ArticleDetail>
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Ana Sayfa";
     Layout = "~/Views/Shared/_HomeLayout.cshtml";
 }
 
@@ -222,6 +222,13 @@
     </div>
 </div>
 
+<!-- ChatBot Erişim İkonu -->
+<div class="chatbot-launcher">
+    <a asp-controller="ChatBot" asp-action="Index" class="btn btn-primary rounded-circle shadow-sm chatbot-button" title="Bingöl Üniversitesi ChatBot">
+        <i class="bi bi-chat-dots-fill"></i>
+    </a>
+</div>
+
 @section scripts {
     <script>
         $(document).ready(function () {
@@ -414,4 +421,34 @@
             });
         });
     </script>
+}
+
+@section Styles {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        .chatbot-launcher {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 1000;
+        }
+
+        .chatbot-button {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .chatbot-button i {
+            font-size: 24px;
+        }
+
+        .chatbot-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+        }
+    </style>
 }
