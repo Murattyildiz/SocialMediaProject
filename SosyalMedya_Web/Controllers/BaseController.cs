@@ -68,13 +68,13 @@ namespace SosyalMedya_Web.Controllers
                         // Orijinal anahtarlar
                         ViewData["UserName"] = $"{userApiResponse.Data.FirstName} {userApiResponse.Data.LastName}";
                         ViewData["UserImage"] = string.IsNullOrEmpty(userApiResponse.Data.ImagePath)
-                            ? "/frontend/assets/images/testLogo.jpg"
+                            ? "https://localhost:5190/images/default.jpg"
                             : $"https://localhost:5190/{userApiResponse.Data.ImagePath}";
 
                         // Yeni anahtarlar
                         ViewData["CurrentUserName"] = $"{userApiResponse.Data.FirstName} {userApiResponse.Data.LastName}";
                         ViewData["CurrentUserImage"] = string.IsNullOrEmpty(userApiResponse.Data.ImagePath)
-                            ? "/frontend/assets/images/testLogo.jpg"
+                            ? "https://localhost:5190/images/default.jpg"
                             : $"https://localhost:5190/{userApiResponse.Data.ImagePath}";
 
                         // Get article count
@@ -102,11 +102,11 @@ namespace SosyalMedya_Web.Controllers
             {
                 // Set default values if error occurs
                 ViewData["UserName"] = "Kullanıcı";
-                ViewData["UserImage"] = "/frontend/assets/images/testLogo.jpg";
+                ViewData["UserImage"] = "https://localhost:5190/images/default.jpg";
                 ViewData["MyArticle"] = 0;
 
                 ViewData["CurrentUserName"] = "Kullanıcı";
-                ViewData["CurrentUserImage"] = "/frontend/assets/images/testLogo.jpg";
+                ViewData["CurrentUserImage"] = "https://localhost:5190/images/default.jpg";
                 ViewData["CurrentUserArticleCount"] = 0;
 
                 // Log the error

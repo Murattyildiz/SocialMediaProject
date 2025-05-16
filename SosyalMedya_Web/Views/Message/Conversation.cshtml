@@ -304,9 +304,12 @@
                 }
             }
             
+            // Doğru profil resmini kullanma
+            var senderProfileImage = isFromCurrentUser ? currentUserImage : message.senderImage;
+            
             var messageHtml = `
                 <div id="${messageId}" class="d-flex ${isFromCurrentUser ? 'justify-content-end' : 'justify-content-start'} mb-3 message-item">
-                    ${!isFromCurrentUser ? `<img src="${message.senderImage}" class="rounded-circle me-2 align-self-end" alt="" width="30" height="30" style="object-fit: cover;">` : ''}
+                    ${!isFromCurrentUser ? `<img src="${senderProfileImage}" class="rounded-circle me-2 align-self-end" alt="" width="30" height="30" style="object-fit: cover;">` : ''}
                     <div class="${isFromCurrentUser ? 'bg-primary text-white' : 'bg-light'} rounded p-3 message-bubble ${message.isSending ? 'sending-message' : ''}" style="max-width: 70%; word-wrap: break-word;">
                         <p class="mb-0">${message.content}</p>
                         <small class="${isFromCurrentUser ? 'text-white-50' : 'text-muted'} d-block text-end">
@@ -314,7 +317,7 @@
                             ${statusIcon}
                         </small>
                     </div>
-                    ${isFromCurrentUser ? `<img src="${message.senderImage}" class="rounded-circle ms-2 align-self-end" alt="" width="30" height="30" style="object-fit: cover;">` : ''}
+                    ${isFromCurrentUser ? `<img src="${senderProfileImage}" class="rounded-circle ms-2 align-self-end" alt="" width="30" height="30" style="object-fit: cover;">` : ''}
                 </div>
             `;
             

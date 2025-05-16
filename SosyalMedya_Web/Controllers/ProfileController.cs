@@ -65,7 +65,7 @@ namespace SosyalMedya_Web.Controllers
             // Profil sayfasında görüntülenecek kullanıcı bilgileri
             ViewData["UserName"] = $"{userApiResponse.Data.FirstName} {userApiResponse.Data.LastName}";
             ViewData["UserImage"] = string.IsNullOrEmpty(userApiResponse.Data.ImagePath)
-                ? "/frontend/assets/images/testLogo.jpg"
+                ? "/images/default.jpg"
                 : $"{_apiUrl}/{userApiResponse.Data.ImagePath}";
             ViewData["UserRegistrationDate"] = "-";
 

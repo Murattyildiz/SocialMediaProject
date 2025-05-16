@@ -26,7 +26,7 @@
                                 <a href="/mesajlar/@user.UserId" class="list-group-item list-group-item-action @(user.UnreadMessageCount > 0 ? "bg-light" : "")">
                                     <div class="d-flex align-items-center">
                                         <div class="position-relative me-3">
-                                            <img src="@user.ImagePath" class="rounded-circle" width="50" height="50" alt="@user.FullName" style="object-fit: cover;">
+                                            <img src="@user.ImagePath" onerror="this.onerror=null; this.src='/images/default.jpg';" class="rounded-circle" width="50" height="50" alt="@user.FullName" style="object-fit: cover;">
                                             @if (user.UnreadMessageCount > 0)
                                             {
                                                 <span class="badge bg-danger rounded-circle position-absolute top-0 end-0">@user.UnreadMessageCount</span>
@@ -78,4 +78,42 @@
     .bg-light {
         background-color: rgba(13, 110, 253, 0.07) !important;
     }
-</style> 
+</style>
+
+@section Scripts {
+<script>
+    $(document).ready(function() {
+        // Profil resimlerini düzeltme
+        $(".list-group-item img").each(function() {
+            var img = $(this);
+            var imgSrc = img.attr("src");
+            
+            // Resim yüklendikten sonra boşsa veya geçersizse, onerror tetikleyicisini etkinleştirelim
+            if (!imgSrc || imgSrc === "null" || imgSrc === "undefined") {
+                img.attr("src", "/images/default.jpg");
+                return;
+            }
+            
+            // Eğer tam URL ise (http:// veya https:// ile başlıyorsa), bunu kullan
+            if (imgSrc && !imgSrc.includes("http")) {
+                // API URL'sini ekle
+                img.attr("src", "https://localhost:5190" + (imgSrc.startsWith("/") ? "" : "/") + imgSrc);
+            }
+            
+            // Resim yüklenemezse varsayılan resmi göster (onerror niteliği zaten tag'e eklenmiş)
+            img.on("error", function() {
+                console.log("Resim yüklenmedi: " + imgSrc);
+                $(this).attr("src", "/images/default.jpg");
+                // Bir daha hata olmasını önle
+                $(this).off("error");
+            });
+        });
+        
+        // Tarayıcı konsoluna görüntü URL'sini ve sorunları göster (hata ayıklama için)
+        console.log("Mesaj listesi profil resimlerini düzeltiyor...");
+        $(".list-group-item img").each(function() {
+            console.log("Resim URL: " + $(this).attr("src"));
+        });
+    });
+</script>
+} 

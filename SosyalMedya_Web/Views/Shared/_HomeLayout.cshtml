@@ -146,7 +146,7 @@
                     </form>
                     <div class="dropdown text-end">
                         <a href="#" class="d-block link-body-emphasis text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                            <img src="@ViewData["CurrentUserImage"]" alt="mdo" width="32" height="32" class="rounded-circle">
+                            <img src="@ViewData["CurrentUserImage"]" onerror="this.onerror=null; this.src='/images/default.jpg';" alt="mdo" width="32" height="32" class="rounded-circle">
                         </a>
                         <ul class="dropdown-menu text-small">
                             <li><a class="dropdown-item" href="/profilim">Profilim</a></li>
@@ -162,7 +162,7 @@
             <div id="leftSideMenu" class="sticky-top col-2 justify-content-start h-50 py-1 px-1 text-center">
                 <div class="border border-1 mb-4 mt-3 shadow h-auto">
                     <a class="d-inline-flex align-items-center link-body-emphasis text-decoration-none mt-2" href="/profilim">
-                        <img src="@ViewData["CurrentUserImage"]" class="img-fluid img-thumbnail rounded-circle me-2" width="50" height="50" alt="">
+                        <img src="@ViewData["CurrentUserImage"]" onerror="this.onerror=null; this.src='/images/default.jpg';" class="img-fluid img-thumbnail rounded-circle me-2" width="50" height="50" alt="">
                     </a>
                     <h6>@ViewData["CurrentUserName"]</h6>
                     <div class="align-items-center justify-content-center justify-content-md-between mb-5">

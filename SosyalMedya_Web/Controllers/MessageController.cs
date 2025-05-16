@@ -75,6 +75,26 @@ namespace SosyalMedya_Web.Controllers
 
             try
             {
+                // Mevcut kullanıcının (kendi) bilgilerini getir
+                var currentUserResponse = await httpClient.GetAsync($"{_apiUrl}/api/Users/getbyid?id={currentUserId}");
+                
+                if (currentUserResponse.IsSuccessStatusCode)
+                {
+                    var currentUserJson = await currentUserResponse.Content.ReadAsStringAsync();
+                    var currentUserApiResponse = JsonConvert.DeserializeObject<ApiDataResponse<UserDto>>(currentUserJson);
+                    
+                    if (currentUserApiResponse.Success && currentUserApiResponse.Data != null)
+                    {
+                        string currentUserName = $"{currentUserApiResponse.Data.FirstName} {currentUserApiResponse.Data.LastName}";
+                        string currentUserImage = string.IsNullOrEmpty(currentUserApiResponse.Data.ImagePath) 
+                            ? $"{_apiUrl}/images/default.jpg" 
+                            : $"{_apiUrl}/{currentUserApiResponse.Data.ImagePath}";
+                        
+                        ViewData["CurrentUserName"] = currentUserName;
+                        ViewData["CurrentUserImage"] = currentUserImage;
+                    }
+                }
+
                 // Son mesajları olan kullanıcıların listesini getir
                 var userListResponse = await httpClient.GetAsync($"{_apiUrl}/api/Users/getall");
                 
@@ -93,14 +113,36 @@ namespace SosyalMedya_Web.Controllers
 
                 var userList = userListApiResponse.Data
                     .Where(u => u.Id != currentUserId)
-                    .Select(u => new MessageUserListViewModel
+                    .Select(u => 
                     {
-                        UserId = u.Id,
-                        FullName = $"{u.FirstName} {u.LastName}",
-                        ImagePath = string.IsNullOrEmpty(u.ImagePath) ? "/images/default.jpg" : u.ImagePath,
-                        LastMessageContent = "",
-                        LastMessageDate = DateTime.MinValue,
-                        UnreadMessageCount = 0
+                        // Görüntü yolunu düzgün bir şekilde biçimlendir
+                        var imagePath = u.ImagePath;
+                        string fullImagePath;
+                        
+                        if (string.IsNullOrEmpty(imagePath))
+                        {
+                            fullImagePath = $"{_apiUrl}/images/default.jpg";
+                        }
+                        else if (imagePath.StartsWith("http://") || imagePath.StartsWith("https://"))
+                        {
+                            fullImagePath = imagePath;
+                        }
+                        else
+                        {
+                            // Yol başındaki / işaretini temizle
+                            imagePath = imagePath.TrimStart('/');
+                            fullImagePath = $"{_apiUrl}/{imagePath}";
+                        }
+                        
+                        return new MessageUserListViewModel
+                        {
+                            UserId = u.Id,
+                            FullName = $"{u.FirstName} {u.LastName}",
+                            ImagePath = fullImagePath,
+                            LastMessageContent = "",
+                            LastMessageDate = DateTime.MinValue,
+                            UnreadMessageCount = 0
+                        };
                     })
                     .ToList();
 
@@ -177,7 +219,7 @@ namespace SosyalMedya_Web.Controllers
                 ViewData["OtherUserName"] = $"{otherUser.FirstName} {otherUser.LastName}";
                 ViewData["OtherUserImage"] = string.IsNullOrEmpty(otherUser.ImagePath) 
                     ? $"{_apiUrl}/images/default.jpg" 
-                    : $"{_apiUrl}/{otherUser.ImagePath}";
+                    : $"{_apiUrl}/{otherUser.ImagePath.TrimStart('/')}";
                 
                 ViewData["CurrentUserId"] = currentUserId;
                 ViewData["Token"] = token;
@@ -209,7 +251,7 @@ namespace SosyalMedya_Web.Controllers
                                 currentUserName = $"{currentUserApiResponse.Data.FirstName} {currentUserApiResponse.Data.LastName}";
                                 currentUserImage = string.IsNullOrEmpty(currentUserApiResponse.Data.ImagePath) 
                                     ? $"{_apiUrl}/images/default.jpg" 
-                                    : $"{_apiUrl}/{currentUserApiResponse.Data.ImagePath}";
+                                    : $"{_apiUrl}/{currentUserApiResponse.Data.ImagePath.TrimStart('/')}";
                                 
                                 ViewData["CurrentUserName"] = currentUserName;
                                 ViewData["CurrentUserImage"] = currentUserImage;
