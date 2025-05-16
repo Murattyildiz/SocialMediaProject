@@ -48,7 +48,15 @@
                             <span class="">#<b><i>@ArticleDetail.TopicTitle</i></b></span>
                             <span class="float-end me-1 mt-1 badge badge-sm @color">@status</span>
                         </div>
-                        <div class="ps-2 mb-1">
+                        <div class="ps-2 mb-1 d-flex align-items-center">
+                            @if (string.IsNullOrEmpty(comment.Image))
+                            {
+                                <img src="/images/default.jpg" class="rounded-circle me-2" width="40" height="40" alt="Profile Picture" />
+                            }
+                            else
+                            {
+                                <img src="https://localhost:5190/@comment.Image" onerror="this.onerror=null; this.src='/images/default.jpg';" class="rounded-circle me-2" width="40" height="40" alt="Profile Picture" />
+                            }
                             <span class=""><b>@comment.UserName</b></span>
                         </div>
                         <div>
