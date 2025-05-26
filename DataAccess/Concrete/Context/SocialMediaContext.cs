@@ -14,7 +14,7 @@ namespace DataAccess.Concrete.Context
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
 
-            optionsBuilder.UseSqlServer(@"Server=.;Database=SocialMediaa;Trusted_Connection=true;TrustServerCertificate=true;");
+            optionsBuilder.UseSqlServer(@"Server=.;Database=SocialMediiaa;Trusted_Connection=true;TrustServerCertificate=true;");
         }
 
         public virtual DbSet<OperationClaim> OperationClaims { get; set; }

@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccess.Migrations
 {
     [DbContext(typeof(SocialMediaContext))]
-    [Migration("20250508154918_olusturma")]
+    [Migration("20250526021406_olusturma")]
     partial class olusturma
     {
         /// <inheritdoc />
